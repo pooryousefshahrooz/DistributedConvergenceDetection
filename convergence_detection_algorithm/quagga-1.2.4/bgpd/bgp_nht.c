@@ -443,8 +443,8 @@ sendmsg_nexthop (struct bgp_nexthop_cache *bnc, int command)
   /* Check socket. */
   if (!zclient || zclient->sock < 0)
     {
-      zlog_debug("%s: Can't send NH register, Zebra client not established",
-		 __FUNCTION__);
+   //    zlog_debug("%s: Can't send NH register, Zebra client not established",
+		 // __FUNCTION__);
       return;
     }
 

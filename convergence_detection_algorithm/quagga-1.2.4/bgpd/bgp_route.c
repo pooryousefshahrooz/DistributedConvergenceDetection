@@ -2288,10 +2288,13 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 
       /* Received Logging. */
       if (BGP_DEBUG (update, UPDATE_IN))  
+      {
+
 	zlog (peer->log, LOG_DEBUG, "%s rcvd %s/%d",
 	      peer->host,
 	      inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN),
 	      p->prefixlen);
+}
 
       /* graceful restart STALE flag unset. */
       if (CHECK_FLAG (ri->flags, BGP_INFO_STALE))
@@ -2377,6 +2380,8 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
   /* Received Logging. */
   if (BGP_DEBUG (update, UPDATE_IN))  
     {
+    //zlog_debug ("%s We received the update 2384 !", "...............");
+
       zlog (peer->log, LOG_DEBUG, "%s rcvd %s/%d",
 	    peer->host,
 	    inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN),
@@ -3244,6 +3249,8 @@ int
 bgp_nlri_parse_ip (struct peer *peer, struct attr *attr,
                    struct bgp_nlri *packet)
 {
+
+
   u_char *pnt;
   u_char *lim;
   struct prefix p;
@@ -3262,6 +3269,9 @@ bgp_nlri_parse_ip (struct peer *peer, struct attr *attr,
      then the Error Subcode is set to Invalid Network Field. */
   for (; pnt < lim; pnt += psize)
     {
+
+       // zlog_debug ("%s we are in  pnt < lim; pnt += psize for","=================");
+
       /* Clear prefix structure. */
       memset (&p, 0, sizeof (struct prefix));
 
