@@ -1463,6 +1463,10 @@ static int
 bgp_process_announce_selected (struct peer *peer, struct bgp_info *selected,
                                struct bgp_node *rn, afi_t afi, safi_t safi)
 {
+
+
+zlog_debug ("%s we are in bgp_process_announce_selected for ", peer->host);
+
   struct prefix *p;
   struct attr attr;
   struct attr_extra extra;
@@ -1475,6 +1479,9 @@ bgp_process_announce_selected (struct peer *peer, struct bgp_info *selected,
   /* Announce route to Established peer. */
   if (peer->status != Established)
     return 0;
+
+  zlog_debug ("%s and this is for in bgp_process_announce_selected ", peer->host);
+
 
   /* Address family configuration check. */
   if (! peer->afc_nego[afi][safi])
@@ -1494,16 +1501,29 @@ bgp_process_announce_selected (struct peer *peer, struct bgp_info *selected,
       /* Announcement to peer->conf.  If the route is filtered,
          withdraw it. */
         if (selected && bgp_announce_check (selected, peer, p, &attr, afi, safi))
+        {
+          zlog_debug ("%s we are in if (selected && bgp_announce_check in bgp_process_announce_selected for ",peer->host);
+          //zlog_debug ("%s we are for ",p->u.prefix4);
+
           bgp_adj_out_set (rn, peer, p, &attr, afi, safi, selected);
+        }
         else
+        {
+        zlog_debug ("%s it seems we have else for if (selected && bgp_announce_check for ",peer->host);
+
           bgp_adj_out_unset (rn, peer, p, afi, safi);
+        }
         break;
       case BGP_TABLE_RSCLIENT:
         /* Announcement to peer->conf.  If the route is filtered, 
            withdraw it. */
         if (selected && 
             bgp_announce_check_rsclient (selected, peer, p, &attr, afi, safi))
+        {
+        zlog_debug ("we are in if (selected && bgp_announce_check_rsclient ");
+
           bgp_adj_out_set (rn, peer, p, &attr, afi, safi, selected);
+        }
         else
 	  bgp_adj_out_unset (rn, peer, p, afi, safi);
         break;
@@ -1524,6 +1544,11 @@ struct bgp_process_queue
 static wq_item_status
 bgp_process_rsclient (struct work_queue *wq, void *data)
 {
+
+zlog_debug ("we are in  bgp_process_rsclient ");
+
+
+
   struct bgp_process_queue *pq = data;
   struct bgp *bgp = pq->bgp;
   struct bgp_node *rn = pq->rn;
@@ -1534,6 +1559,10 @@ bgp_process_rsclient (struct work_queue *wq, void *data)
   struct bgp_info_pair old_and_new;
   struct listnode *node, *nnode;
   struct peer *rsclient = bgp_node_table (rn)->owner;
+
+  zlog_debug ("%s and this is for ", rsclient->host);
+
+
   
   /* Best path selection. */
   bgp_best_selection (bgp, rn, &old_and_new, afi, safi);
@@ -1573,6 +1602,8 @@ bgp_process_rsclient (struct work_queue *wq, void *data)
 	  bgp_info_unset_flag (rn, new_select, BGP_INFO_ATTR_CHANGED);
 	  UNSET_FLAG (new_select->flags, BGP_INFO_MULTIPATH_CHG);
 	}
+
+  zlog_debug ("we are in  else of  bgp_process_rsclient");
       bgp_process_announce_selected (rsclient, new_select, rn, afi, safi);
     }
 
@@ -1586,6 +1617,11 @@ bgp_process_rsclient (struct work_queue *wq, void *data)
 static wq_item_status
 bgp_process_main (struct work_queue *wq, void *data)
 {
+
+zlog_debug ("we are at bgp_process_main");
+
+
+
   struct bgp_process_queue *pq = data;
   struct bgp *bgp = pq->bgp;
   struct bgp_node *rn = pq->rn;
@@ -1632,16 +1668,25 @@ bgp_process_main (struct work_queue *wq, void *data)
     }
 
 
+  zlog_debug ("we may or may not have a list of peers ");
+
   /* Check each BGP peer. */
   for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
     {
+
+    zlog_debug ("%s for",peer->host);
+      //&p->u.prefix
       bgp_process_announce_selected (peer, new_select, rn, afi, safi);
+      zlog_debug ("%s we may have sent for ",peer->host);
+
     }
 
   /* FIB update. */
   if ((safi == SAFI_UNICAST || safi == SAFI_MULTICAST) && (! bgp->name &&
       ! bgp_option_check (BGP_OPT_NO_FIB)))
     {
+      zlog_debug ("the most important FIB update. in bgp_process_main and Check each BGP peer");
+
       if (new_select 
 	  && new_select->type == ZEBRA_ROUTE_BGP 
 	  && new_select->sub_type == BGP_ROUTE_NORMAL)
@@ -1658,7 +1703,11 @@ bgp_process_main (struct work_queue *wq, void *data)
     
   /* Reap old select bgp_info, if it has been removed */
   if (old_select && CHECK_FLAG (old_select->flags, BGP_INFO_REMOVED))
+  {
+    zlog_debug ("we are at if (old_select && CHECK_FLAG (old_select->fla");
+
     bgp_info_reap (rn, old_select);
+  }
   
   UNSET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
   return WQ_SUCCESS;
@@ -1704,6 +1753,11 @@ bgp_process_queue_init (void)
 void
 bgp_process (struct bgp *bgp, struct bgp_node *rn, afi_t afi, safi_t safi)
 {
+
+
+  zlog_debug ("this is bgp_process and we are going to work on queue and bgp_node_table");
+
+
   struct bgp_process_queue *pqnode;
   
   /* already scheduled for processing? */
@@ -1725,7 +1779,13 @@ bgp_process (struct bgp *bgp, struct bgp_node *rn, afi_t afi, safi_t safi)
   
   if ( (bm->process_main_queue == NULL) ||
        (bm->process_rsclient_queue == NULL) )
+  {
+
+  zlog_debug ("the bm->process_main_queue or bm->process_rsclient_queue were empty lets init them");
+
+
     bgp_process_queue_init ();
+  }
   
   pqnode = XCALLOC (MTYPE_BGP_PROCESS_QUEUE, 
                     sizeof (struct bgp_process_queue));
@@ -1743,15 +1803,24 @@ bgp_process (struct bgp *bgp, struct bgp_node *rn, afi_t afi, safi_t safi)
   switch (bgp_node_table (rn)->type)
     {
       case BGP_TABLE_MAIN:
+        zlog_debug ("we added to the bm->process_main_queue");
         work_queue_add (bm->process_main_queue, pqnode);
         break;
       case BGP_TABLE_RSCLIENT:
+        zlog_debug ("we added to the bm->process_rsclient_queue");
+
         work_queue_add (bm->process_rsclient_queue, pqnode);
         break;
     }
   
   SET_FLAG (rn->flags, BGP_NODE_PROCESS_SCHEDULED);
+
+    zlog_debug ("this is end of bgp_process and we were going to work on queue and bgp_node_table");
+
+
   return;
+
+
 }
 
 static int
@@ -1905,6 +1974,11 @@ bgp_update_rsclient (struct peer *rsclient, afi_t afi, safi_t safi,
       struct attr *attr, struct peer *peer, struct prefix *p, int type,
       int sub_type, struct prefix_rd *prd, u_char *tag)
 {
+
+
+zlog_debug ("this is the bgp_update_rsclient");
+
+
   struct bgp_node *rn;
   struct bgp *bgp;
   struct attr new_attr;
@@ -2080,6 +2154,9 @@ bgp_update_rsclient (struct peer *rsclient, afi_t afi, safi_t safi,
 
   bgp_unlock_node (rn);
 
+
+zlog_debug ("this is end of the bgp_update_rsclient");
+
   return;
 }
 
@@ -2120,6 +2197,12 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	    afi_t afi, safi_t safi, int type, int sub_type,
 	    struct prefix_rd *prd, u_char *tag, int soft_reconfig)
 {
+
+
+      zlog_debug ("%s and this is bgp_update_main for loop detection, AS path local-as loop check , etc for ",peer->host);
+
+
+
   int ret;
   int aspath_loop_count = 0;
   struct bgp_node *rn;
@@ -2191,6 +2274,9 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
   /* Apply incoming filter.  */
   if (bgp_input_filter (peer, p, attr, afi, safi) == FILTER_DENY)
     {
+
+    zlog_debug ("we are at the Apply incoming filter");
+
       reason = "filter;";
       goto filtered;
     }
@@ -2204,6 +2290,9 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
    * the attr (which takes over the memory references) */
   if (bgp_input_modifier (peer, p, &new_attr, afi, safi) == RMAP_DENY)
     {
+
+      zlog_debug ("we are at the Apply incoming route-map");
+
       reason = "route-map;";
       bgp_attr_flush (&new_attr);
       goto filtered;
@@ -2218,6 +2307,10 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	  || IPV4_CLASS_DE (ntohl (new_attr.nexthop.s_addr))
 	  || bgp_nexthop_self (&new_attr))
 	{
+
+  zlog_debug ("we are at the IPv4 unicast next hop check");
+
+
 	  reason = "martian next-hop;";
 	  bgp_attr_flush (&new_attr);
 	  goto filtered;
@@ -2263,6 +2356,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	      /* graceful restart STALE flag unset. */
 	      if (CHECK_FLAG (ri->flags, BGP_INFO_STALE))
 		{
+      zlog_debug ("we are at the graceful restart STALE flag unset");
 		  bgp_info_unset_flag (rn, ri, BGP_INFO_STALE);
 		  bgp_process (bgp, rn, afi, safi);
 		}
@@ -2289,6 +2383,8 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
       /* Received Logging. */
       if (BGP_DEBUG (update, UPDATE_IN))  
       {
+      zlog_debug ("we are at the place which we add rcvd log");
+
 
 	zlog (peer->log, LOG_DEBUG, "%s rcvd %s/%d",
 	      peer->host,
@@ -2333,6 +2429,10 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 	  && peer->sort == BGP_PEER_EBGP)
 	{
 	  /* Now we do normal update dampening.  */
+
+  zlog_debug ("Now we do normal update dampening.");
+
+
 	  ret = bgp_damp_update (ri, rn, afi, safi);
 	  if (ret == BGP_DAMP_SUPPRESSED)
 	    {
@@ -2380,7 +2480,7 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
   /* Received Logging. */
   if (BGP_DEBUG (update, UPDATE_IN))  
     {
-    //zlog_debug ("%s We received the update 2384 !", "...............");
+    zlog_debug ("%s We received the update 2425 !", "...............");
 
       zlog (peer->log, LOG_DEBUG, "%s rcvd %s/%d",
 	    peer->host,
@@ -2389,6 +2489,9 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
     }
 
   /* Make new BGP info. */
+
+  zlog_debug ("%s We Make new BGP info. ", "...............");
+
   new = info_make(type, sub_type, peer, attr_new, rn);
 
   /* Update MPLS tag. */
@@ -2424,6 +2527,9 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
   bgp_aggregate_increment (bgp, p, new, afi, safi);
   
   /* Register new BGP information. */
+
+  //zlog_debug ("we are going to register new bgp information and is for bgp_update_main and maybe correct one");
+
   bgp_info_add (rn, new);
   
   /* route_node_get lock */
@@ -2438,6 +2544,8 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 
   /* Process change. */
   bgp_process (bgp, rn, afi, safi);
+
+  zlog_debug ("we are at the end of bgp_update_main");
 
   return 0;
 
@@ -2456,6 +2564,8 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 
   bgp_unlock_node (rn);
   bgp_attr_flush (&new_attr);
+  zlog_debug ("we are at filtered!!!!!!!!!");
+
 
   return 0;
 }
@@ -2465,6 +2575,12 @@ bgp_update (struct peer *peer, struct prefix *p, struct attr *attr,
             afi_t afi, safi_t safi, int type, int sub_type,
             struct prefix_rd *prd, u_char *tag, int soft_reconfig)
 {
+
+
+    zlog_debug ("%s and this is normal bgp_update for ",peer->host);
+
+
+
   struct peer *rsclient;
   struct listnode *node, *nnode;
   struct bgp *bgp;
@@ -2472,6 +2588,10 @@ bgp_update (struct peer *peer, struct prefix *p, struct attr *attr,
 
   ret = bgp_update_main (peer, p, attr, afi, safi, type, sub_type, prd, tag,
           soft_reconfig);
+
+
+  zlog_debug ("%s we returned from bgp_update_main ",peer->host);
+
 
   bgp = peer->bgp;
 
@@ -2482,6 +2602,8 @@ bgp_update (struct peer *peer, struct prefix *p, struct attr *attr,
         bgp_update_rsclient (rsclient, afi, safi, attr, peer, p, type,
                 sub_type, prd, tag);
     }
+    zlog_debug ("%s and this is end of normal bgp_update for ",peer->host);
+
 
   return ret;
 }
@@ -2660,6 +2782,10 @@ static void
 bgp_announce_table (struct peer *peer, afi_t afi, safi_t safi,
                    struct bgp_table *table, int rsclient)
 {
+
+
+    zlog_debug ("%s We are in bgp_announce_table for ", peer->host);
+
   struct bgp_node *rn;
   struct bgp_info *ri;
   struct attr attr;
@@ -2690,11 +2816,24 @@ bgp_announce_table (struct peer *peer, afi_t afi, safi_t safi,
 	}
 
   bgp_attr_flush_encap(&attr);
+
+
+
+    zlog_debug ("%s We are at the end of  bgp_announce_table for ", peer->host);
+
+
 }
 
 void
 bgp_announce_route (struct peer *peer, afi_t afi, safi_t safi)
 {
+
+
+      zlog_debug ("%s We are at the bgp_announce_route for ", peer->host);
+
+
+
+
   struct bgp_node *rn;
   struct bgp_table *table;
 
@@ -2718,11 +2857,22 @@ bgp_announce_route (struct peer *peer, afi_t afi, safi_t safi)
 
   if (CHECK_FLAG(peer->af_flags[afi][safi], PEER_FLAG_RSERVER_CLIENT))
     bgp_announce_table (peer, afi, safi, NULL, 1);
+
+
+  zlog_debug ("%s We are at the end bgp_announce_route for ", peer->host);
+
 }
 
 void
 bgp_announce_route_all (struct peer *peer)
 {
+
+
+    zlog_debug ("%s We are at the bgp_announce_route_all for ", peer->host);
+
+
+
+
   afi_t afi;
   safi_t safi;
   
@@ -3164,7 +3314,11 @@ bgp_clear_stale_route (struct peer *peer, afi_t afi, safi_t safi)
 	if (ri->peer == peer)
 	  {
 	    if (CHECK_FLAG (ri->flags, BGP_INFO_STALE))
+      {
+      zlog_debug ("%s lets bgp_rib_remove (rn, ri, pee","--------............---------");
+
 	      bgp_rib_remove (rn, ri, peer, afi, safi);
+      }
 	    break;
 	  }
     }
@@ -3249,6 +3403,9 @@ int
 bgp_nlri_parse_ip (struct peer *peer, struct attr *attr,
                    struct bgp_nlri *packet)
 {
+
+
+  zlog_debug ("%s we are going to check bgp_nlri_parse_ip for prefix and for",peer->host);
 
 
   u_char *pnt;
@@ -3602,6 +3759,9 @@ bgp_static_update_rsclient (struct peer *rsclient, struct prefix *p,
     bgp_info_set_flag (rn, new, BGP_INFO_VALID);
 
   /* Register new BGP information. */
+
+  zlog_debug ("we are going to registere new BGP information this is for bgp_static_update_rsclient");
+
   bgp_info_add (rn, new);
   
   /* route_node_get lock */
@@ -3755,6 +3915,8 @@ bgp_static_update_main (struct bgp *bgp, struct prefix *p,
   bgp_aggregate_increment (bgp, p, new, afi, safi);
   
   /* Register new BGP information. */
+  //zlog_debug ("we are going to register new BGP information");
+
   bgp_info_add (rn, new);
   
   /* route_node_get lock */
@@ -3973,6 +4135,9 @@ bgp_static_update_safi (struct bgp *bgp, struct prefix *p,
   bgp_aggregate_increment (bgp, p, new, afi, safi);
 
   /* Register new BGP information. */
+    //zlog_debug ("we are going to register new BGP information this is for bgp_static_update_safi");
+
+
   bgp_info_add (rn, new);
 
   /* route_node_get lock */
@@ -4968,6 +5133,7 @@ bgp_aggregate_route (struct bgp *bgp, struct prefix *p, struct bgp_info *rinew,
 						aggregate->as_set,
                                                 atomic_aggregate), rn);
       SET_FLAG (new->flags, BGP_INFO_VALID);
+        //zlog_debug ("we are going to register new BGP information this is for aggregate again");
 
       bgp_info_add (rn, new);
       bgp_unlock_node (rn);
@@ -5814,6 +5980,8 @@ bgp_redistribute_add (struct prefix *p, const struct in_addr *nexthop,
 	  SET_FLAG (new->flags, BGP_INFO_VALID);
 
 	  bgp_aggregate_increment (bgp, p, new, afi, SAFI_UNICAST);
+    //zlog_debug ("we are going to register new BGP information this is for aggregate");
+
 	  bgp_info_add (bn, new);
 	  bgp_unlock_node (bn);
 	  bgp_process (bgp, bn, afi, SAFI_UNICAST);

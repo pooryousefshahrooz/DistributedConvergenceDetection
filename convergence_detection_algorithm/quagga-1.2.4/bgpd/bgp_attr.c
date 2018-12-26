@@ -807,7 +807,11 @@ bgp_attr_unintern_sub (struct attr *attr)
 {
   /* aspath refcount shoud be decrement. */
   if (attr->aspath)
+  {
+  //zlog_debug ("%s we are in bgp_attr_unintern_sub and if (attr->aspath)","--------............---------");
+
     aspath_unintern (&attr->aspath);
+  }
   UNSET_FLAG(attr->flag, ATTR_FLAG_BIT (BGP_ATTR_AS_PATH));
   
   if (attr->community)
@@ -816,6 +820,8 @@ bgp_attr_unintern_sub (struct attr *attr)
   
   if (attr->extra)
     {
+       // zlog_debug ("%s we are in bgp_attr_unintern_sub and if (attr->extra)","--------............---------");
+
       if (attr->extra->ecommunity)
         ecommunity_unintern (&attr->extra->ecommunity);
       UNSET_FLAG(attr->flag, ATTR_FLAG_BIT (BGP_ATTR_EXT_COMMUNITIES));

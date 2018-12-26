@@ -47,6 +47,10 @@ trickle_up (int index, struct pqueue *queue)
 {
   void *tmp;
 
+
+  //zlog_debug ("we are in trickle_up");
+
+
   /* Save current node as tmp node.  */
   tmp = queue->array[index];
 
@@ -55,17 +59,30 @@ trickle_up (int index, struct pqueue *queue)
   while (index > 0 &&
          (*queue->cmp) (tmp, queue->array[PARENT_OF (index)]) < 0)
     {
+        //zlog_debug ("while (index > 0");
+
       /* actually trickle up */
       queue->array[index] = queue->array[PARENT_OF (index)];
       if (queue->update != NULL)
+      {
+      //zlog_debug ("if (queue->update != NULL");
+
 	(*queue->update) (queue->array[index], index);
+      }
       index = PARENT_OF (index);
     }
+
+
+     // zlog_debug ("we are going to Restore the tmp node to appropriate place");
 
   /* Restore the tmp node to appropriate place.  */
   queue->array[index] = tmp;
   if (queue->update != NULL)
+  {
+    //zlog_debug ("again if (queue->update != NULL)");
+
     (*queue->update) (tmp, index);
+  }
 }
 
 void
@@ -151,11 +168,22 @@ void
 pqueue_enqueue (void *data, struct pqueue *queue)
 {
   if (queue->size + 2 >= queue->array_size && ! pqueue_expand (queue))
+  {
+
+       // zlog_debug ("we returned from  pqueue_enqueue");
+
     return;
+  }
 
   queue->array[queue->size] = data;
   if (queue->update != NULL)
+  {
+
+ // zlog_debug ("queue->update is not null");
+
+
     (*queue->update) (data, queue->size);
+  }
   trickle_up (queue->size, queue);
   queue->size ++;
 }

@@ -828,6 +828,12 @@ funcname_thread_add_timer_timeval (struct thread_master *m,
                                   struct timeval *time_relative,
 				  debugargdef)
 {
+
+
+    //zlog_debug ("%s We are at funcname_thread_add_timer_timeval", ".....---------..................");
+
+
+
   struct thread *thread;
   struct pqueue *queue;
   struct timeval alarm_time;
@@ -905,6 +911,9 @@ funcname_thread_add_background (struct thread_master *m,
                                 void *arg, long delay,
 				debugargdef)
 {
+
+  //zlog_debug ("%s We are at funcname_thread_add_background", ".....---------..................");
+
   struct timeval trel;
   
   assert (m != NULL);

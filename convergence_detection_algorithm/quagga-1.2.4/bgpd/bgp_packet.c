@@ -343,7 +343,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
       BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
       stream_reset (s);
       stream_reset (snlri);
-      zlog_debug ("%s We are at the returning packet point", ".....---------..................");
+      //zlog_debug ("%s We are at the returning packet point", ".....---------..................");
 
       return packet;
     }
@@ -515,6 +515,13 @@ void
 bgp_default_update_send (struct peer *peer, struct attr *attr,
 			 afi_t afi, safi_t safi, struct peer *from)
 {
+
+
+
+  zlog_debug ("we are at  bgp_default_update_send");
+
+
+
   struct stream *s;
   struct prefix p;
   unsigned long pos;
@@ -854,6 +861,10 @@ bgp_write (struct thread *thread)
 static int
 bgp_write_notify (struct peer *peer)
 {
+
+  zlog_debug (" We are in bgp_write_notify");
+
+
   int ret, val;
   u_char type;
   struct stream *s; 
@@ -1144,6 +1155,13 @@ void
 bgp_route_refresh_send (struct peer *peer, afi_t afi, safi_t safi,
 			u_char orf_type, u_char when_to_refresh, int remove)
 {
+
+
+
+    zlog_debug (" We are in bgp_route_refresh_send");
+
+
+
   struct stream *s;
   int length;
   struct bgp_filter *filter;
@@ -2099,7 +2117,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
 
       if (ret)
       {
-      zlog_debug ("%s Here we have our community attributes ",attrstr);
+      //zlog_debug ("%s Here we have our community attributes ",attrstr);
 
 
 	zlog (peer->log, lvl, "%s rcvd UPDATE w/ attr: %s",
@@ -2142,7 +2160,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
     {      
 
 
-      //zlog_debug ("%s we are in a loop ","-----------------");
+      zlog_debug ("%s we are in a loop ","-----------------");
 
 
       if (!nlris[i].nlri) continue;
@@ -2215,6 +2233,12 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   if (!update_len && !withdraw_len
       && nlris[NLRI_MP_UPDATE].length == 0)
     {
+
+
+    zlog_debug ("%s we are in if (!update_len && !withdraw_len ","--------............---------");
+
+
+
       afi_t afi = 0;
       safi_t safi;
       
@@ -2223,6 +2247,10 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
        */ 
       if (!attribute_len)
         {
+
+        zlog_debug ("%s we are in if (!attribute_len) ","--------............---------");
+
+
           afi = AFI_IP;
           safi = SAFI_UNICAST;
         }
@@ -2234,19 +2262,30 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
                && bgp_afi_safi_valid_indices (nlris[NLRI_MP_WITHDRAW].afi,
                                               &nlris[NLRI_MP_WITHDRAW].safi))
         {
+
+                  zlog_debug ("%s we are in else if (attr.flag == BGP_ATTR_MP_UNREACH_NLRI ","--------............---------");
+
           afi = nlris[NLRI_MP_WITHDRAW].afi;
           safi = nlris[NLRI_MP_WITHDRAW].safi;
         }
       
       if (afi && peer->afc[afi][safi])
         {
+      zlog_debug ("%s we are in if (afi && peer->afc[afi][safi]) ","--------............---------");
+
+
 	  /* End-of-RIB received */
 	  SET_FLAG (peer->af_sflags[afi][safi],
 		    PEER_STATUS_EOR_RECEIVED);
 
 	  /* NSF delete stale route */
 	  if (peer->nsf[afi][safi])
+    {
+
+      zlog_debug ("%s we are in NSF delete stale route","--------............---------");
+
 	    bgp_clear_stale_route (peer, afi, safi);
+    }
 
 	  if (BGP_DEBUG (normal, NORMAL))
 	    zlog (peer->log, LOG_DEBUG, "rcvd End-of-RIB for %s from %s",

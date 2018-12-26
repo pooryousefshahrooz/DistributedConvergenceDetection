@@ -117,6 +117,9 @@ work_queue_is_scheduled (struct work_queue *wq)
 static int
 work_queue_schedule (struct work_queue *wq, unsigned int delay)
 {
+
+        //zlog_debug ("%s We are at the work_queue_schedule", ".....---------..................");
+
   /* if appropriate, schedule work queue thread */
   if ( CHECK_FLAG (wq->flags, WQ_UNPLUGGED)
        && (wq->thread == NULL)
@@ -124,15 +127,25 @@ work_queue_schedule (struct work_queue *wq, unsigned int delay)
     {
       wq->thread = thread_add_background (wq->master, work_queue_run, 
                                           wq, delay);
+
+        //zlog_debug ("%s We are after  thread_add_background", ".....---------..................");
+
       return 1;
     }
   else
+  {
+    //zlog_debug ("%s We are in else for thread_add_background", ".....---------..................");
+
     return 0;
+  }
 }
   
 void
 work_queue_add (struct work_queue *wq, void *data)
 {
+
+//zlog_debug ("%s We are at work_queue_add", ".....---------..................");
+
   struct work_queue_item *item;
   
   assert (wq);
@@ -145,9 +158,13 @@ work_queue_add (struct work_queue *wq, void *data)
   
   item->data = data;
   listnode_add (wq->items, item);
+
+  //zlog_debug ("%s We are after  listnode_add", ".....---------..................");
+
   
   work_queue_schedule (wq, wq->spec.hold);
-  
+  //zlog_debug ("%s We are after  work_queue_schedule", ".....---------..................");
+
   return;
 }
 
