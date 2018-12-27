@@ -224,7 +224,7 @@ bgp_cluster_id_set (struct bgp *bgp, struct in_addr *cluster_id)
   IPV4_ADDR_COPY (&bgp->cluster_id, cluster_id);
   bgp_config_set (bgp, BGP_CONFIG_CLUSTER_ID);
 
-  /* Clear all IBGP peer. */
+  /* Clear all IBGP peerpeer. */
   for (ALL_LIST_ELEMENTS (bgp->peer, node, nnode, peer))
     {
       if (peer->sort != BGP_PEER_IBGP)
@@ -826,7 +826,66 @@ peer_unlock_with_caller (const char *name, struct peer *peer)
 
   return peer;
 }
-  
+
+
+/* Methods for inirializng the data structures specific to convergence detection */
+struct kv_converged *
+initialize_kv_converged(size_t size){
+    kv_converged *converged = malloc(size * sizeof(kv_converged));
+    for(size_t i=0; i< size;i++){
+        converged[i].size_of_list = size;
+        converged[i].key_event_identifier = 0;
+        converged[i].value_converged_yet = false;
+
+    }
+    return converged;
+}
+
+
+struct kv_sent *
+initialize_kv_sent(size_t size){
+    kv_sent * sent = malloc(size * sizeof(kv_sent));
+    for(size_t i=0;i<size;i++){
+        sent[i].size_of_list = size;
+        sent[i].key_event_identifier = 0;
+        sent[i].value_neighbour_id = 0;
+        sent[i].value_prefix = NULL;
+        sent[i].value_timestamp = 0;
+    }
+    return  sent;
+}
+struct kv_cause_RCR*
+initialize_kv_cause_RCR(size_t size){
+    kv_cause_RCR * cause_RCR = malloc(size * sizeof(kv_cause_RCR));
+    for(size_t i=0;i<size;i++){
+        cause_RCR[i].size_of_list = size;
+        cause_RCR[i].key_timestamp = 0;
+        cause_RCR[i].value_Message_indicator = NULL;
+        cause_RCR[i].value_event_identifier=0;
+        cause_RCR[i].value_router_id = 0;
+    }
+    return cause_RCR;
+}
+struct kv_cause_NRCR*
+initialize_kv_cause_NRCR(size_t size){
+    kv_cause_NRCR * cause_NRCR = malloc(size * sizeof(kv_cause_NRCR));
+    for(size_t i=0;i< size;i++){
+        cause_NRCR[i].size_of_list = size;
+        cause_NRCR[i].key_timestamp = 0;
+        cause_NRCR[i].value_Message_indicator = NULL;
+        cause_NRCR[i].value_event_identifier = 0;
+        cause_NRCR[i].value_prefix = NULL;
+        cause_NRCR[i].value_asPath = NULL;
+        cause_NRCR[i].value_timestamp = 0;
+        cause_NRCR[i].value_neighbour_id = 0;
+
+    }
+    return cause_NRCR;
+}
+/* they end herer */
+
+
+
 /* Allocate new peer object, implicitely locked.  */
 static struct peer *
 peer_new (struct bgp *bgp)
@@ -843,6 +902,17 @@ peer_new (struct bgp *bgp)
   
   /* Allocate new peer. */
   peer = XCALLOC (MTYPE_BGP_PEER, sizeof (struct peer));
+
+  /* Set Data structures particular to Convergence detection*/
+    peer -> converged = initialize_kv_converged(1000);
+    peer -> sent = initialize_kv_sent(1000);
+    peer -> cause_RCR = initialize_kv_cause_RCR(1000);
+    peer -> cause_NRCR = initialize_kv_cause_NRCR(1000);
+
+    /* they end here  */
+
+
+
 
   /* Set default value. */
   peer->fd = -1;
@@ -5531,6 +5601,7 @@ bgp_master_init (void)
 
   bm = &bgp_master;
   bm->bgp = list_new ();
+
   bm->listen_sockets = list_new ();
   bm->port = BGP_PORT_DEFAULT;
   bm->master = thread_master_create ();

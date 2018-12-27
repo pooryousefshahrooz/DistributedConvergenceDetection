@@ -19,6 +19,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include <zebra.h>
+#include <time.h>
 
 #include "thread.h"
 #include "stream.h"
@@ -147,16 +148,23 @@ bgp_connect_check (struct peer *peer)
     }
 }
 
+
+
+
+
+
+
+
+
+
 /* Make BGP update packet.  */
 static struct stream *
 bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 {
 
-  zlog_debug ("%s We are going to make the update macket", "..................");
+//  zlog_debug ("%s We are going to make the update macket", "..................");
 
-
-
-  struct stream *s;
+ struct stream *s;
   struct stream *snlri;
   struct bgp_adj_out *adj;
   struct bgp_advertise *adv;
@@ -174,14 +182,33 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   stream_reset (s);
   snlri = peer->scratch;
   stream_reset (snlri);
+//  zlog_debug("this is the value of converged %d", peer -> converged[0].value_converged_yet);
+
+
+
+  //    struct listnode *node, *nnode;
+//    struct bgp *bgp;
+//
+//    for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp)){
+//        zlog_debug("-------------------------------------------");
+//        zlog_debug("this is the router_id %d", bgp -> router_id );
+//        zlog_debug("-------------------------------------------");
+//        zlog_debug("And this is the router-id of remote peer %d and this is his bgp router id %d", peer -> local_id, peer -> bgp -> router_id);
+//        zlog_debug("---------------------------------------------");
+//    }
+
+//  if(peer -> local_id == 16780545){
+//  }
 
   adv = BGP_ADV_FIFO_HEAD (&peer->sync[afi][safi]->update);
 
 
-  zlog_debug ("%s We are before the while (adv)", ".......................");
+//  zlog_debug ("%s We are before the while (adv)", ".......................");
 
   while (adv)
     {
+
+      zlog_debug("I am in the while loop ***********************888888888");
       assert (adv->rn);
       rn = adv->rn;
       adj = adv->adj;
@@ -197,6 +224,23 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 	break;
 
       /* If packet is empty, set attribute. */
+        zlog_debug("hola hola hola hola hola hola ");
+        int i;
+        int iter_for_converged = peer->converged[0].size_of_list;
+        for(i=0;i<iter_for_converged;i++){
+            if(peer->converged[i].key_event_identifier == 0 && peer -> converged[i].value_converged_yet == false && i>0 ){
+                peer->converged[i].key_event_identifier = peer -> converged[i-1].key_event_identifier + 1;
+                peer->converged[i].value_converged_yet = false;
+                break;
+            }else if(peer->converged[i].key_event_identifier == 0 && peer -> converged[i].value_converged_yet == false && i==0){
+                peer->converged[i].key_event_identifier = peer -> converged[i].key_event_identifier + 1;
+                peer->converged[i].value_converged_yet = false;
+                break;
+            }else{
+                continue;
+            }
+        }
+        zlog_debug("just set the value for this index %d", i);
       if (stream_empty (s))
 	{
 	  struct prefix_rd *prd = NULL;
@@ -229,8 +273,6 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
     //   zlog_debug ("%s this is shahrooz's lenghth", result);
-
-    
 
     /* 2: Write timestamp */
    stream_putl (s, 111111);
@@ -319,7 +361,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
     }
 
 
-  zlog_debug ("%s We are after  the while (adv)", ".....---------..................");
+//  zlog_debug ("%s We are after  the while (adv)", ".....---------..................");
 
 
 
@@ -343,7 +385,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
       BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
       stream_reset (s);
       stream_reset (snlri);
-      //zlog_debug ("%s We are at the returning packet point", ".....---------..................");
+//      zlog_debug ("%s We are at the returning packet point", ".....---------..................");
 
       return packet;
     }
@@ -515,13 +557,6 @@ void
 bgp_default_update_send (struct peer *peer, struct attr *attr,
 			 afi_t afi, safi_t safi, struct peer *from)
 {
-
-
-
-  zlog_debug ("we are at  bgp_default_update_send");
-
-
-
   struct stream *s;
   struct prefix p;
   unsigned long pos;
@@ -861,10 +896,6 @@ bgp_write (struct thread *thread)
 static int
 bgp_write_notify (struct peer *peer)
 {
-
-  zlog_debug (" We are in bgp_write_notify");
-
-
   int ret, val;
   u_char type;
   struct stream *s; 
@@ -1155,13 +1186,6 @@ void
 bgp_route_refresh_send (struct peer *peer, afi_t afi, safi_t safi,
 			u_char orf_type, u_char when_to_refresh, int remove)
 {
-
-
-
-    zlog_debug (" We are in bgp_route_refresh_send");
-
-
-
   struct stream *s;
   int length;
   struct bgp_filter *filter;
@@ -1883,32 +1907,35 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   attr.extra = &extra;
 
   s = peer->ibuf;
+  zlog_debug("***************************************************");
+  zlog_debug("this is the converged of this peer %d ", peer -> converged[0].key_event_identifier);
+  zlog_debug("this is the value of converged of this peer %d", peer -> converged[0].value_converged_yet);
+  zlog_debug("***************************************************");
 
 
-
-      char result3[50]; 
+    char result3[50];
    
-    sprintf(result3, "%u", stream_pnt (s)); 
+  sprintf(result3, "%u", stream_pnt (s));
 
-    zlog_debug ("%s 1. this is the stream_pnt (s) ", result3);
+  zlog_debug ("%s 1. this is the stream_pnt (s) ", result3);
 
 
 
-      char result4[50]; 
+  char result4[50];
    
-    sprintf(result4, "%u", size); 
+  sprintf(result4, "%u", size);
 
-    zlog_debug ("%s 2. this is the size ", result4);
+  zlog_debug ("%s 2. this is the size ", result4);
 
 
   end = stream_pnt (s) + size;
 
 
-      char result2[50]; 
+  char result2[50];
    
-    sprintf(result2, "%u", end); 
+  sprintf(result2, "%u", end);
 
-    zlog_debug ("%s 3.this is the end  ", result2);
+  zlog_debug ("%s 3.this is the end  ", result2);
 
 
 
@@ -2117,7 +2144,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
 
       if (ret)
       {
-      //zlog_debug ("%s Here we have our community attributes ",attrstr);
+      zlog_debug ("%s Here we have our community attributes ",attrstr);
 
 
 	zlog (peer->log, lvl, "%s rcvd UPDATE w/ attr: %s",
@@ -2160,7 +2187,7 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
     {      
 
 
-      zlog_debug ("%s we are in a loop ","-----------------");
+      //zlog_debug ("%s we are in a loop ","-----------------");
 
 
       if (!nlris[i].nlri) continue;
@@ -2233,12 +2260,6 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   if (!update_len && !withdraw_len
       && nlris[NLRI_MP_UPDATE].length == 0)
     {
-
-
-    zlog_debug ("%s we are in if (!update_len && !withdraw_len ","--------............---------");
-
-
-
       afi_t afi = 0;
       safi_t safi;
       
@@ -2247,10 +2268,6 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
        */ 
       if (!attribute_len)
         {
-
-        zlog_debug ("%s we are in if (!attribute_len) ","--------............---------");
-
-
           afi = AFI_IP;
           safi = SAFI_UNICAST;
         }
@@ -2262,30 +2279,19 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
                && bgp_afi_safi_valid_indices (nlris[NLRI_MP_WITHDRAW].afi,
                                               &nlris[NLRI_MP_WITHDRAW].safi))
         {
-
-                  zlog_debug ("%s we are in else if (attr.flag == BGP_ATTR_MP_UNREACH_NLRI ","--------............---------");
-
           afi = nlris[NLRI_MP_WITHDRAW].afi;
           safi = nlris[NLRI_MP_WITHDRAW].safi;
         }
       
       if (afi && peer->afc[afi][safi])
         {
-      zlog_debug ("%s we are in if (afi && peer->afc[afi][safi]) ","--------............---------");
-
-
 	  /* End-of-RIB received */
 	  SET_FLAG (peer->af_sflags[afi][safi],
 		    PEER_STATUS_EOR_RECEIVED);
 
 	  /* NSF delete stale route */
 	  if (peer->nsf[afi][safi])
-    {
-
-      zlog_debug ("%s we are in NSF delete stale route","--------............---------");
-
 	    bgp_clear_stale_route (peer, afi, safi);
-    }
 
 	  if (BGP_DEBUG (normal, NORMAL))
 	    zlog (peer->log, LOG_DEBUG, "rcvd End-of-RIB for %s from %s",

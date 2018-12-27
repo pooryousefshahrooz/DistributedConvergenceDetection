@@ -20,6 +20,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef _QUAGGA_BGP_PACKET_H
 #define _QUAGGA_BGP_PACKET_H
+#include <stdbool.h>
 
 #define BGP_NLRI_LENGTH       1U
 #define BGP_TOTAL_ATTR_LEN    2U
@@ -36,6 +37,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #define ORF_COMMON_PART_REMOVE_ALL 0xC0 
 #define ORF_COMMON_PART_PERMIT     0x00 
 #define ORF_COMMON_PART_DENY       0x20 
+
 
 /* Packet send and receive function prototypes. */
 extern int bgp_read (struct thread *);

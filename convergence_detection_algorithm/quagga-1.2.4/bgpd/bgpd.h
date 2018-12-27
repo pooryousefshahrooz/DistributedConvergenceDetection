@@ -20,9 +20,57 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef _QUAGGA_BGPD_H
 #define _QUAGGA_BGPD_H
-
+#include <stdbool.h>
 /* For union sockunion.  */
 #include "sockunion.h"
+
+/* these are data structures I am gonna use for convergence detection*/
+typedef struct kv_converged {
+    int size_of_list;
+    int key_event_identifier;
+    bool value_converged_yet;
+
+} kv_converged;
+
+typedef struct kv_sent{
+    int size_of_list;
+    int key_event_identifier;
+    int value_neighbour_id;
+    char *value_prefix;
+    int value_timestamp;
+    int value_own_router_id;
+
+} kv_sent;
+
+typedef struct kv_cause_RCR{
+    int size_of_list;
+    int key_timestamp;
+    char *value_Message_indicator ;
+    int value_event_identifier;
+    int value_router_id;
+}kv_cause_RCR;
+
+typedef struct kv_cause_NRCR{
+    int size_of_list;
+    int key_timestamp;
+    char *value_Message_indicator;
+    int value_event_identifier;
+    char * value_prefix;
+    char * value_asPath;
+    int value_timestamp;
+    int value_neighbour_id;
+} kv_cause_NRCR;
+/* they end here */
+
+/* Function headers for initialization functions speciific to data structures for convergence detection*/
+extern struct kv_converged * initialize_kv_converged(size_t size);
+extern struct kv_sent* initialize_kv_sent(size_t size);
+extern struct kv_cause_RCR* initialize_kv_cause_RCR(size_t size);
+extern struct kv_cause_NRCR* initialize_kv_cause_NRCR(size_t size);
+
+/* they end here */
+
+
 
 /* Typedef BGP specific types.  */
 typedef u_int32_t as_t;
@@ -34,6 +82,7 @@ struct bgp_master
 {
   /* BGP instance list.  */
   struct list *bgp;
+
 
   /* BGP thread master.  */
   struct thread_master *master;
@@ -62,9 +111,16 @@ struct bgp_master
 #define BGP_OPT_NO_LISTEN                (1 << 3)
 };
 
+
+
+
+
+
+
 /* BGP instance structure.  */
 struct bgp 
 {
+
   /* AS number of this BGP instance.  */
   as_t as;
 
@@ -85,6 +141,7 @@ struct bgp
 
   /* BGP route-server-clients. */
   struct list *rsclient;
+
 
   /* BGP configuration.  */
   u_int16_t config;
@@ -146,7 +203,10 @@ struct bgp
   u_char redist_metric_flag[AFI_MAX][ZEBRA_ROUTE_MAX];
   u_int32_t redist_metric[AFI_MAX][ZEBRA_ROUTE_MAX];
 
-  /* BGP redistribute route-map.  */
+
+//    struct kv_converged *converged;
+
+    /* BGP redistribute route-map.  */
   struct
   {
     char *name;
@@ -288,6 +348,15 @@ struct peer
   /* Root cause event information. */
 
   char root_cause_event_info;
+
+  /* these are the declarations for data structures specific to convergence detection */
+  struct kv_converged * converged;
+  struct kv_sent * sent;
+  struct kv_cause_RCR * cause_RCR;
+  struct kv_cause_NRCR * cause_NRCR;
+
+    /* these end here */
+
 
   /* BGP structure.  */
   struct bgp *bgp;
@@ -763,7 +832,7 @@ struct bgp_nlri
 #define BGP_INIT_START_TIMER                     1
 #define BGP_DEFAULT_HOLDTIME                   180
 #define BGP_DEFAULT_KEEPALIVE                    60 
-#define BGP_DEFAULT_EBGP_ROUTEADV                30
+#define BGP_DEFAULT_EBGP_ROUTEADV                1
 #define BGP_DEFAULT_IBGP_ROUTEADV                1
 #define BGP_DEFAULT_CONNECT_RETRY                5
 

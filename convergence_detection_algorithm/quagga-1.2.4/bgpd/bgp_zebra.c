@@ -692,11 +692,6 @@ bgp_nexthop_set (union sockunion *local, union sockunion *remote,
 void
 bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, safi_t safi)
 {
-
-
-  zlog_debug ("we are in bgp_zebra_announce");
-
-
   int flags;
   u_char distance;
   struct peer *peer;
@@ -975,10 +970,6 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
       zapi_ipv6_route (ZEBRA_IPV6_ROUTE_ADD, zclient, 
                        (struct prefix_ipv6 *) p, &api);
     }
-
-
-// zlog_debug ("we are at the end of bgp_zebra_announce");
-
 }
 
 void

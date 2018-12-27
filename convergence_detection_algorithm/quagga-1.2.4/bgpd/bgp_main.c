@@ -51,6 +51,11 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_debug.h"
 #include "bgpd/bgp_filter.h"
 #include "bgpd/bgp_zebra.h"
+#include "bgpd/bgp_packet.h"
+
+
+
+
 
 /* bgpd options, we use GNU getopt library. */
 static const struct option longopts[] = 
@@ -442,6 +447,7 @@ main (int argc, char **argv)
     }
 
   /* Initializations. */
+
   srandom (time (NULL));
   signal_init (bm->master, array_size(bgp_signals), bgp_signals);
   if (skip_runas)
@@ -484,6 +490,7 @@ main (int argc, char **argv)
 	       getpid ());
 
   /* Start finite state machine, here we go! */
+
   thread_main (bm->master);
 
   /* Not reached. */
