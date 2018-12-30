@@ -25,50 +25,59 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "sockunion.h"
 
 /* these are data structures I am gonna use for convergence detection*/
-typedef struct kv_converged {
-    int size_of_list;
-    int key_event_identifier;
-    bool value_converged_yet;
+// typedef struct kv_converged {
+//     int size_of_list;
+//     int key_event_identifier;
+//     bool value_converged_yet;
 
-} kv_converged;
+// } kv_converged;
 
-typedef struct kv_sent{
-    int size_of_list;
-    int key_event_identifier;
-    int value_neighbour_id;
-    char *value_prefix;
-    int value_timestamp;
-    int value_own_router_id;
 
-} kv_sent;
+// typedef struct kv_sent{
+//     int size_of_list;
+//     int key_event_identifier;
+//     int value_neighbour_id;
+//     char *value_prefix;
+//     int value_timestamp;
+//     int value_own_router_id;
 
-typedef struct kv_cause_RCR{
-    int size_of_list;
-    int key_timestamp;
-    char *value_Message_indicator ;
-    int value_event_identifier;
-    int value_router_id;
-}kv_cause_RCR;
+// } kv_sent;
 
-typedef struct kv_cause_NRCR{
-    int size_of_list;
-    int key_timestamp;
-    char *value_Message_indicator;
-    int value_event_identifier;
-    char * value_prefix;
-    char * value_asPath;
-    int value_timestamp;
-    int value_neighbour_id;
-} kv_cause_NRCR;
+// typedef struct kv_cause_RCR{
+//     int size_of_list;
+//     int key_timestamp;
+//     char *value_Message_indicator ;
+//     int value_event_identifier;
+//     int value_router_id;
+// }kv_cause_RCR;
+
+// typedef struct kv_cause_NRCR{
+//     int size_of_list;
+//     int key_timestamp;
+//     char *value_Message_indicator;
+//     int value_event_identifier;
+//     char * value_prefix;
+//     char * value_asPath;
+//     int value_timestamp;
+//     int value_neighbour_id;
+// } kv_cause_NRCR;
+// /* they end here */
+
+// /* Function headers for initialization functions speciific to data structures for convergence detection*/
+// extern struct kv_converged * initialize_kv_converged(size_t size);
+// extern struct kv_sent* initialize_kv_sent(size_t size);
+// extern struct kv_cause_RCR* initialize_kv_cause_RCR(size_t size);
+// extern struct kv_cause_NRCR* initialize_kv_cause_NRCR(size_t size);
+
 /* they end here */
-
-/* Function headers for initialization functions speciific to data structures for convergence detection*/
-extern struct kv_converged * initialize_kv_converged(size_t size);
-extern struct kv_sent* initialize_kv_sent(size_t size);
-extern struct kv_cause_RCR* initialize_kv_cause_RCR(size_t size);
-extern struct kv_cause_NRCR* initialize_kv_cause_NRCR(size_t size);
-
-/* they end here */
+struct converged{
+    long event_id;
+    bool converged_yet;
+    struct converged* next;
+};
+extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
+extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
+extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
 
 
 
@@ -187,6 +196,10 @@ struct bgp
   u_int16_t af_flags[AFI_MAX][SAFI_MAX];
 #define BGP_CONFIG_DAMPENING              (1 << 0)
 
+
+
+
+
   /* Static route configuration.  */
   struct bgp_table *route[AFI_MAX][SAFI_MAX];
 
@@ -205,6 +218,8 @@ struct bgp
 
 
 //    struct kv_converged *converged;
+
+
 
     /* BGP redistribute route-map.  */
   struct
@@ -340,7 +355,43 @@ typedef enum
 
 #define BGP_MAX_PACKET_SIZE_OVERFLOW          1024
 
+
+struct Node {
+    long event_id;
+    struct peer* peer_list;
+    struct Node* next;
+    struct Node* prev;
+};
+
+extern void insert(struct Node** head_ref,long  in_event_id, struct peer* peer_list);
+extern void printList(struct Node* node);
+extern void delete_node(struct Node** head_ref, long in_event_id);
+extern struct Node* getNode(struct Node** head_ref, long in_event_id);
 /* BGP neighbor structure. */
+
+struct cause{
+    time_t new_timestamp;
+    char message_type;
+    long event_id;
+    long router_id;
+    char * prefix_str;
+    char * as_path;
+    time_t received_timestamp;
+    struct peer* neighbour;
+
+    struct cause* next;
+};
+extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
+extern struct cause* getcause(struct cause** head_ref, time_t in_timestamp);
+struct sent{
+    time_t timestamp;
+    struct peer* neighbour;
+    long router_id;
+    char * prefix;
+    struct sent * next;
+};
+extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
+extern void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix );
 struct peer
 {
 
@@ -348,13 +399,17 @@ struct peer
   /* Root cause event information. */
 
   char root_cause_event_info;
-
+//  struct peer * next_peer;
+    struct converged*  converged;
+    struct Node* node_list;
+    struct cause* cause;
+    struct sent * sent;
   /* these are the declarations for data structures specific to convergence detection */
-  struct kv_converged * converged;
-  struct kv_sent * sent;
-  struct kv_cause_RCR * cause_RCR;
-  struct kv_cause_NRCR * cause_NRCR;
-
+  // struct kv_converged * converged;
+  // struct kv_sent * sent;
+  // struct kv_cause_RCR * cause_RCR;
+  // struct kv_cause_NRCR * cause_NRCR;
+    struct peer* next_peer_for_sent;
     /* these end here */
 
 

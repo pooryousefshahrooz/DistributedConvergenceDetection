@@ -19,7 +19,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include <zebra.h>
-
+#include <time.h>
 #include "prefix.h"
 #include "thread.h"
 #include "buffer.h"
@@ -828,64 +828,309 @@ peer_unlock_with_caller (const char *name, struct peer *peer)
 }
 
 
+
+void insert_in_converged(struct converged ** head_ref, long in_event_id){
+    struct converged* temp = (*head_ref);
+
+    while(temp != NULL){
+        if(temp -> event_id == in_event_id){
+            printf("\nthe event_id already exists \n");
+            return;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    struct converged * new_node = (struct converged *) malloc(sizeof(struct converged));
+    new_node -> event_id = in_event_id;
+    new_node -> converged_yet = false;
+
+    new_node->next = (*head_ref);
+    (*head_ref) = new_node;
+}
+
+
+void set_converged_yet_true(struct converged ** head_ref, long in_event_id){
+    int found = 0;
+    struct converged * temp = (*head_ref);
+    while(temp != NULL){
+        if(temp -> event_id == in_event_id){
+            temp -> converged_yet = true;
+            found = 1;
+            break;
+        }else{
+            temp = temp ->next;
+        }
+    }
+    if(found == 1){
+        printf(" Successfully set the converged value to true of the event with event_id %ld \n", temp -> event_id );
+    }else{
+        printf("the event with event_id %ld does not exixt\n", in_event_id );
+    }
+}
+
+
+int get_converged_yet_value(struct converged ** head_ref, long in_event_id){
+    struct converged * temp = (*head_ref);
+    while(temp != NULL){
+        if(temp -> event_id == in_event_id){
+
+            if(temp -> converged_yet == true){
+                return 1;
+            }else if(temp -> converged_yet == false){
+                return 0;
+            }
+
+        }else{
+            temp = temp -> next;
+        }
+    }
+    return -1;
+}
+
+void insert(struct Node** head_ref, long in_event_id, struct peer* in_peer_list)
+{
+
+    struct Node* temp = (*head_ref);
+
+    while(temp != NULL){
+        if(temp -> event_id == in_event_id){
+            printf("\nthe event_id already exists \n");
+            return;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    /* 1. allocate node */
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+
+    /* 2. put in the data  */
+    new_node->event_id = in_event_id;
+    new_node->peer_list = in_peer_list;
+
+    /* 3. Make next of new node as head and previous as NULL */
+    new_node->next = (*head_ref);
+    new_node->prev = NULL;
+
+    /* 4. change prev of head node to new node */
+    if ((*head_ref) != NULL)
+        (*head_ref)->prev = new_node;
+
+    /* 5. move the head to point to the new node */
+    (*head_ref) = new_node;
+}
+
+
+
+
+
+struct Node* getNode(struct Node** head_ref, long in_event_id){
+    struct Node* temp = (*head_ref);
+    struct Node* result = NULL;
+    while(temp != NULL){
+        if(temp -> event_id == in_event_id){
+            result = temp;
+            break;
+        }else{
+            temp = temp-> next;
+        }
+
+    }
+    return result;
+}
+
+void delete_node(struct Node** head_ref, long in_event_id){
+    struct Node* temp = (*head_ref);
+    while(temp != NULL){
+
+        if(temp -> event_id == in_event_id){
+
+            if(temp == (*head_ref)){
+                *head_ref = temp -> next;
+                (*head_ref) -> prev = NULL;
+                free(temp);
+            }else if(temp -> next != NULL){
+                temp -> next -> prev = temp -> prev;
+                temp -> prev -> next = temp -> next;
+                free(temp);
+            }else if( temp -> next == NULL){
+                temp -> prev -> next = NULL;
+                free(temp);
+            }
+
+            break;
+
+        }else{
+            temp = temp -> next;
+        }
+
+    }
+
+
+    return;
+}
+
+
+
+void printList(struct Node* node)
+{
+    struct Node* last;
+    printf("\nTraversal in forward direction \n");
+    while (node != NULL) {
+        zlog_debug(" event id is %ld ", node->event_id);
+        zlog_debug(" router local id is %s ", node->peer_list-> local_id);
+        last = node;
+        node = node->next;
+    }
+    printf("\n");
+
+    printf("\nTraversal in reverse direction \n");
+    while (last != NULL) {
+        zlog_debug("event id is  %ld ", last->event_id);
+        zlog_debug(" router local id is %s ", last->peer_list->local_id);
+        last = last->prev;
+    }
+    printf("\n");
+}
+
+
+
+
 /* Methods for inirializng the data structures specific to convergence detection */
-struct kv_converged *
-initialize_kv_converged(size_t size){
-    kv_converged *converged = malloc(size * sizeof(kv_converged));
-    for(size_t i=0; i< size;i++){
-        converged[i].size_of_list = size;
-        converged[i].key_event_identifier = 0;
-        converged[i].value_converged_yet = false;
-
-    }
-    return converged;
-}
-
-
-struct kv_sent *
-initialize_kv_sent(size_t size){
-    kv_sent * sent = malloc(size * sizeof(kv_sent));
-    for(size_t i=0;i<size;i++){
-        sent[i].size_of_list = size;
-        sent[i].key_event_identifier = 0;
-        sent[i].value_neighbour_id = 0;
-        sent[i].value_prefix = NULL;
-        sent[i].value_timestamp = 0;
-    }
-    return  sent;
-}
-struct kv_cause_RCR*
-initialize_kv_cause_RCR(size_t size){
-    kv_cause_RCR * cause_RCR = malloc(size * sizeof(kv_cause_RCR));
-    for(size_t i=0;i<size;i++){
-        cause_RCR[i].size_of_list = size;
-        cause_RCR[i].key_timestamp = 0;
-        cause_RCR[i].value_Message_indicator = NULL;
-        cause_RCR[i].value_event_identifier=0;
-        cause_RCR[i].value_router_id = 0;
-    }
-    return cause_RCR;
-}
-struct kv_cause_NRCR*
-initialize_kv_cause_NRCR(size_t size){
-    kv_cause_NRCR * cause_NRCR = malloc(size * sizeof(kv_cause_NRCR));
-    for(size_t i=0;i< size;i++){
-        cause_NRCR[i].size_of_list = size;
-        cause_NRCR[i].key_timestamp = 0;
-        cause_NRCR[i].value_Message_indicator = NULL;
-        cause_NRCR[i].value_event_identifier = 0;
-        cause_NRCR[i].value_prefix = NULL;
-        cause_NRCR[i].value_asPath = NULL;
-        cause_NRCR[i].value_timestamp = 0;
-        cause_NRCR[i].value_neighbour_id = 0;
-
-    }
-    return cause_NRCR;
-}
+//struct kv_converged *
+//initialize_kv_converged(size_t size){
+//    kv_converged *converged = malloc(size * sizeof(kv_converged));
+//    for(size_t i=0; i< size;i++){
+//        converged[i].size_of_list = size;
+//        converged[i].key_event_identifier = 0;
+//        converged[i].value_converged_yet = false;
+//
+//    }
+//    return converged;
+//}
+//
+//
+//struct kv_sent *
+//initialize_kv_sent(size_t size){
+//    kv_sent * sent = malloc(size * sizeof(kv_sent));
+//    for(size_t i=0;i<size;i++){
+//        sent[i].size_of_list = size;
+//        sent[i].key_event_identifier = 0;
+//        sent[i].value_neighbour_id = 0;
+//        sent[i].value_prefix = NULL;
+//        sent[i].value_timestamp = 0;
+//    }
+//    return  sent;
+//}
+//struct kv_cause_RCR*
+//initialize_kv_cause_RCR(size_t size){
+//    kv_cause_RCR * cause_RCR = malloc(size * sizeof(kv_cause_RCR));
+//    for(size_t i=0;i<size;i++){
+//        cause_RCR[i].size_of_list = size;
+//        cause_RCR[i].key_timestamp = 0;
+//        cause_RCR[i].value_Message_indicator = NULL;
+//        cause_RCR[i].value_event_identifier=0;
+//        cause_RCR[i].value_router_id = 0;
+//    }
+//    return cause_RCR;
+//}
+//struct kv_cause_NRCR*
+//initialize_kv_cause_NRCR(size_t size){
+//    kv_cause_NRCR * cause_NRCR = malloc(size * sizeof(kv_cause_NRCR));
+//    for(size_t i=0;i< size;i++){
+//        cause_NRCR[i].size_of_list = size;
+//        cause_NRCR[i].key_timestamp = 0;
+//        cause_NRCR[i].value_Message_indicator = NULL;
+//        cause_NRCR[i].value_event_identifier = 0;
+//        cause_NRCR[i].value_prefix = NULL;
+//        cause_NRCR[i].value_asPath = NULL;
+//        cause_NRCR[i].value_timestamp = 0;
+//        cause_NRCR[i].value_neighbour_id = 0;
+//
+//    }
+//    return cause_NRCR;
+//}
 /* they end herer */
 
+void addcause(struct cause ** head_ref,time_t in_time_stamp, char in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour ){
+    struct converged* temp = (*head_ref);
+
+    while(temp != NULL){
+        if(temp -> event_id == in_event_id){
+            zlog_debug("\nthe event_id already exists \n");
+            return;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    struct cause* new_node = (struct cause *) malloc(sizeof(struct cause));
+    new_node -> new_timestamp = in_time_stamp;
+    new_node -> message_type = in_message_type;
+    new_node -> event_id = in_event_id;
+    new_node -> router_id = in_router_id;
+    new_node -> prefix_str = in_prefix_str;
+    new_node -> as_path = in_as_path;
+    new_node -> received_timestamp = in_received_timestamp;
+    new_node -> neighbour = in_neighbour;
 
 
+    new_node->next = (*head_ref);
+    (*head_ref) = new_node;
+
+}
+
+struct cause* getcause(struct cause** head_ref, time_t in_timestamp){
+    struct cause* temp = (*head_ref);
+    struct cause* result = NULL;
+    while(temp != NULL){
+        if(temp -> new_timestamp == in_timestamp){
+            result = temp;
+            break;
+        }else{
+            temp = temp-> next;
+        }
+
+    }
+    return result;
+}
+
+void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix){
+    struct sent * new_node = (struct sent*) malloc(sizeof(struct sent));
+    new_node -> timestamp = in_time_stamp;
+    new_node -> neighbour = in_neighbour;
+    new_node -> router_id = in_router_id;
+    new_node -> prefix = in_prefix;
+
+
+    new_node->next = (*head_ref);
+    (*head_ref) = new_node;
+}
+void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix ){
+    struct sent * temp = (*head_ref);
+    struct sent * prev = (struct sent *) malloc(sizeof(struct sent));
+    int success = 0;
+    if(temp!=NULL && temp-> timestamp == in_time_stamp && temp -> neighbour -> local_id.s_addr == in_neighbour -> local_id.s_addr && temp -> router_id == in_router_id && temp -> prefix == in_prefix){
+        *head_ref = temp->next;   // Changed head
+        free(temp);               // free old head
+        zlog_debug("successfully deleted the event from sent");
+        return;
+    }
+    while(temp != NULL && temp!=NULL && temp-> timestamp != in_time_stamp && temp -> neighbour -> local_id . s_addr != in_neighbour -> local_id.s_addr && temp -> router_id != in_router_id && temp -> prefix != in_prefix){
+        prev = temp;
+        temp = temp -> next;
+    }
+
+    if(temp == NULL){
+        zlog_debug("Could not delete event from sent b/c entry does not exist");
+        return;
+    }
+
+    prev -> next = temp -> next;
+    free(temp);
+
+
+
+
+}
 /* Allocate new peer object, implicitely locked.  */
 static struct peer *
 peer_new (struct bgp *bgp)
@@ -894,7 +1139,7 @@ peer_new (struct bgp *bgp)
   safi_t safi;
   struct peer *peer;
   struct servent *sp;
-  
+
   /* bgp argument is absolutely required */
   assert (bgp);
   if (!bgp)
@@ -904,10 +1149,28 @@ peer_new (struct bgp *bgp)
   peer = XCALLOC (MTYPE_BGP_PEER, sizeof (struct peer));
 
   /* Set Data structures particular to Convergence detection*/
-    peer -> converged = initialize_kv_converged(1000);
-    peer -> sent = initialize_kv_sent(1000);
-    peer -> cause_RCR = initialize_kv_cause_RCR(1000);
-    peer -> cause_NRCR = initialize_kv_cause_NRCR(1000);
+    peer -> converged = NULL;
+    insert_in_converged(&(peer -> converged), 12345);
+    peer -> node_list = NULL;
+    struct peer* temp = (struct peer *) malloc(sizeof(struct peer));
+    struct peer* temp2 = (struct peer *) malloc(sizeof(struct peer));
+    struct peer* temp3 = (struct peer *) malloc(sizeof(struct peer));
+    temp -> local_as = 6861;
+    temp2 -> local_as = 6862;
+    temp3 -> local_as = 6863;
+    temp -> next_peer_for_sent = temp2;
+    temp2 -> next_peer_for_sent = temp3;
+    insert(&(peer->node_list), 112233, temp);
+
+    peer -> cause = NULL;
+    time_t blah = 5478;
+    addcause(&(peer -> cause),blah,"CBGPMSG",6765, 3434,"10.68.62.5", "1 2 3", time(NULL),temp);
+
+    peer -> sent = NULL;
+    add_to_sent(&(peer -> sent),blah, temp, 8888, "9.8.7.6");
+//    peer -> sent = initialize_kv_sent(1000);
+//    peer -> cause_RCR = initialize_kv_cause_RCR(1000);
+//    peer -> cause_NRCR = initialize_kv_cause_NRCR(1000);
 
     /* they end here  */
 
