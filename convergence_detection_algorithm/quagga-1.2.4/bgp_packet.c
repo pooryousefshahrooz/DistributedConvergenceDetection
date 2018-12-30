@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Zebra; see the file COPYING.  If not, write to the Free
 Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
-//hey this is a comment
+
 #include <zebra.h>
 #include <time.h>
 
@@ -182,23 +182,39 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   stream_reset (s);
   snlri = peer->scratch;
   stream_reset (snlri);
-//  zlog_debug("this is the value of converged %d", peer -> converged[0].value_converged_yet);
+  set_converged_yet_true(&(peer -> converged), 12345);
+  zlog_debug("this is the peer's converged event_id %ld", get_converged_yet_value(&(peer->converged), 12345));
+  struct Node* t = (struct Node *) malloc(sizeof(struct Node));
+  t = getNode(&(peer -> node_list), 112233);
+  zlog_debug("this is the peer's sent's first peer's local AS %ld", t-> peer_list -> local_as);
+  zlog_debug("this is the peer's sent's second peer's local AS %ld", t-> peer_list -> next_peer_for_sent -> local_as);
+  zlog_debug("this is the peer's sent's third peer's local AS %ld", t-> peer_list -> next_peer_for_sent -> next_peer_for_sent -> local_as);
+
+  struct cause* temp_cause = (struct cause*) malloc(sizeof(struct cause));
+  time_t temp_time = 5478;
+  temp_cause = getcause(&(peer -> cause), temp_time);
+  zlog_debug("this is the ip:%s of cause entry with time stamp %ld", temp_cause -> prefix_str, temp_time);
+
+  zlog_debug("this is the ip in the sent %s", peer -> sent -> prefix);
+
+    //  zlog_debug("this is the value of converged %d", peer -> converged[0].value_converged_yet);
 
 
 
-  //    struct listnode *node, *nnode;
+//      struct listnode *node, *nnode;
 //    struct bgp *bgp;
 //
 //    for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp)){
 //        zlog_debug("-------------------------------------------");
 //        zlog_debug("this is the router_id %d", bgp -> router_id );
 //        zlog_debug("-------------------------------------------");
-//        zlog_debug("And this is the router-id of remote peer %d and this is his bgp router id %d", peer -> local_id, peer -> bgp -> router_id);
+//        zlog_debug("And this is the router-id of remote peer %d and this is his bgp router id %d and this is the host %s and this is the peer AS %d ", peer -> local_id, peer -> bgp -> router_id, peer -> host, peer -> as );
 //        zlog_debug("---------------------------------------------");
 //    }
 
 //  if(peer -> local_id == 16780545){
 //  }
+//    zlog_debug("And this is the router-id of remote peer %d and this is his bgp router id %d and this is the host %s and this is the peer AS %d ", peer -> local_id, peer -> bgp -> router_id, peer -> host, peer -> as );
 
   adv = BGP_ADV_FIFO_HEAD (&peer->sync[afi][safi]->update);
 
@@ -208,7 +224,6 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   while (adv)
     {
 
-      zlog_debug("I am in the while loop ***********************888888888");
       assert (adv->rn);
       rn = adv->rn;
       adj = adv->adj;
@@ -224,23 +239,23 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 	break;
 
       /* If packet is empty, set attribute. */
-        zlog_debug("hola hola hola hola hola hola ");
-        int i;
-        int iter_for_converged = peer->converged[0].size_of_list;
-        for(i=0;i<iter_for_converged;i++){
-            if(peer->converged[i].key_event_identifier == 0 && peer -> converged[i].value_converged_yet == false && i>0 ){
-                peer->converged[i].key_event_identifier = peer -> converged[i-1].key_event_identifier + 1;
-                peer->converged[i].value_converged_yet = false;
-                break;
-            }else if(peer->converged[i].key_event_identifier == 0 && peer -> converged[i].value_converged_yet == false && i==0){
-                peer->converged[i].key_event_identifier = peer -> converged[i].key_event_identifier + 1;
-                peer->converged[i].value_converged_yet = false;
-                break;
-            }else{
-                continue;
-            }
-        }
-        zlog_debug("just set the value for this index %d", i);
+//        zlog_debug("hola hola hola hola hola hola ");
+//        int i;
+//        int iter_for_converged = peer->converged[0].size_of_list;
+//        for(i=0;i<iter_for_converged;i++){
+//            if(peer->converged[i].key_event_identifier == 0 && peer -> converged[i].value_converged_yet == false && i>0 ){
+//                peer->converged[i].key_event_identifier = peer -> converged[i-1].key_event_identifier + 1;
+//                peer->converged[i].value_converged_yet = false;
+//                break;
+//            }else if(peer->converged[i].key_event_identifier == 0 && peer -> converged[i].value_converged_yet == false && i==0){
+//                peer->converged[i].key_event_identifier = peer -> converged[i].key_event_identifier + 1;
+//                peer->converged[i].value_converged_yet = false;
+//                break;
+//            }else{
+//                continue;
+//            }
+//        }
+//        zlog_debug("just set the value for this index %d", i);
       if (stream_empty (s))
 	{
 	  struct prefix_rd *prd = NULL;
@@ -1907,10 +1922,10 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   attr.extra = &extra;
 
   s = peer->ibuf;
-  zlog_debug("***************************************************");
-  zlog_debug("this is the converged of this peer %d ", peer -> converged[0].key_event_identifier);
-  zlog_debug("this is the value of converged of this peer %d", peer -> converged[0].value_converged_yet);
-  zlog_debug("***************************************************");
+//  zlog_debug("***************************************************");
+//  zlog_debug("this is the converged of this peer %d ", peer -> converged[0].key_event_identifier);
+//  zlog_debug("this is the value of converged of this peer %d", peer -> converged[0].value_converged_yet);
+//  zlog_debug("***************************************************");
 
 
     char result3[50];
