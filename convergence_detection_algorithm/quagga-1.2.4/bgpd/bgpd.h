@@ -21,6 +21,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #ifndef _QUAGGA_BGPD_H
 #define _QUAGGA_BGPD_H
 #include <stdbool.h>
+#include "/etc/quagga/quagga/lib/prefix.h"
 /* For union sockunion.  */
 #include "sockunion.h"
 
@@ -391,7 +392,16 @@ struct sent{
     struct sent * next;
 };
 extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
-extern void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix );
+struct received_prefix{
+    struct prefix prefix_received;
+    long time_stamp;
+    struct peer* peer_received_from;
+    long event_id;
+    struct received_prefix * next;
+};
+
+extern void add_to_received_prefix(struct received_prefix** head_ref,struct prefix in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id );
+extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, struct prefix in_prefix, struct peer* in_peer);
 struct peer
 {
 
@@ -404,6 +414,7 @@ struct peer
     struct Node* node_list;
     struct cause* cause;
     struct sent * sent;
+    struct received_prefix * received_prefix;
   /* these are the declarations for data structures specific to convergence detection */
   // struct kv_converged * converged;
   // struct kv_sent * sent;
