@@ -416,6 +416,12 @@ struct neighbours_of_a_prefix{
 extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix in_prefix, struct peer* in_peer);
 
 extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix);
+
+struct prefix_neighbour_pair{
+    struct prefix key_prefix;
+    struct peer* value_peer;
+    
+};
 struct peer
 {
 
