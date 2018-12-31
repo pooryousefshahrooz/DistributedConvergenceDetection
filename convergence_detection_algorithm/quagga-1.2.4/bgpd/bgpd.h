@@ -402,6 +402,20 @@ struct received_prefix{
 
 extern void add_to_received_prefix(struct received_prefix** head_ref,struct prefix in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id );
 extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, struct prefix in_prefix, struct peer* in_peer);
+
+
+
+
+
+struct neighbours_of_a_prefix{
+    struct prefix key_prefix;
+    struct peer* peer_list;
+
+    struct neighbours_of_a_prefix * next;
+};
+extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix in_prefix, struct peer* in_peer);
+
+extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix);
 struct peer
 {
 
@@ -421,6 +435,7 @@ struct peer
   // struct kv_cause_RCR * cause_RCR;
   // struct kv_cause_NRCR * cause_NRCR;
     struct peer* next_peer_for_sent;
+    struct peer* next_peer_for_neighbours_of_a_prefix;
     /* these end here */
 
 

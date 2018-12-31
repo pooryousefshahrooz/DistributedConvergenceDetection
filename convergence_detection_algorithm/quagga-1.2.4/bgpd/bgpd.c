@@ -1158,6 +1158,28 @@ struct received_prefix * get_from_received_prefix(struct received_prefix ** head
     }
     return result;
 }
+
+void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix in_prefix, struct peer* in_peer){
+    struct neighbours_of_a_prefix * new_node = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
+    new_node -> key_prefix = in_prefix;
+    new_node -> peer_list = in_peer;
+
+    new_node -> next = (*head_ref);
+    (*head_ref) = new_node;
+}
+struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix){
+    struct neighbours_of_a_prefix * temp = (*head_ref);
+    struct neighbours_of_a_prefix * result = NULL;
+    while(temp != NULL){
+        if(temp -> key_prefix.u.prefix4.s_addr == in_prefix.u.prefix4.s_addr){
+            result = temp;
+            break;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    return result;
+}
 /* Allocate new peer object, implicitely locked.  */
 static struct peer *
 peer_new (struct bgp *bgp)
@@ -1196,6 +1218,7 @@ peer_new (struct bgp *bgp)
     peer -> sent = NULL;
     add_to_sent(&(peer -> sent),blah, temp, 8888, "9.8.7.6");
     peer -> received_prefix = NULL;
+
 //    peer -> sent = initialize_kv_sent(1000);
 //    peer -> cause_RCR = initialize_kv_cause_RCR(1000);
 //    peer -> cause_NRCR = initialize_kv_cause_NRCR(1000);
