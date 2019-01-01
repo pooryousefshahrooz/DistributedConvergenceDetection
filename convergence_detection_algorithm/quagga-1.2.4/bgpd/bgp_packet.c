@@ -197,6 +197,13 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
   zlog_debug("this is the ip in the sent %s", peer -> sent -> prefix);
 
+
+  struct received_prefix * res_rec_pref = (struct received_prefix *) malloc(sizeof(struct received_prefix));
+  struct peer * test_peer = (struct peer *) malloc(sizeof(struct peer));
+  test_peer -> local_as = 6861;
+  res_rec_pref = get_from_received_prefix(&(peer -> received_prefix), "5.5.5.5", test_peer );
+  zlog_debug("this is the time stamp: %ld and this is the event_id: %ld corresponding to this prefix: %s and this peer AS: %d",res_rec_pref -> time_stamp, res_rec_pref -> event_id, "5.5.5.5", test_peer -> local_as);
+
     //  zlog_debug("this is the value of converged %d", peer -> converged[0].value_converged_yet);
 
 

@@ -1133,7 +1133,7 @@ void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* 
 
 }
 
-void add_to_received_prefix(struct received_prefix** head_ref,struct prefix in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id ){
+void add_to_received_prefix(struct received_prefix** head_ref,char * in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id ){
     struct received_prefix * new_node = (struct received_prefix *) malloc(sizeof(struct received_prefix));
     new_node -> prefix_received = in_prefix;
     new_node -> time_stamp = in_time_stamp;
@@ -1143,12 +1143,12 @@ void add_to_received_prefix(struct received_prefix** head_ref,struct prefix in_p
     new_node -> next = (*head_ref);
     (*head_ref) = new_node;
 }
-struct received_prefix * get_from_received_prefix(struct received_prefix ** head_ref, struct prefix in_prefix, struct peer* in_peer){
+struct received_prefix * get_from_received_prefix(struct received_prefix ** head_ref, char* in_prefix, struct peer* in_peer){
     struct received_prefix * result = (struct received_prefix *) malloc(sizeof(struct received_prefix));
     result = NULL;
     struct received_prefix * temp = (*head_ref);
     while(temp != NULL){
-        if(temp -> prefix_received.u.prefix4.s_addr == in_prefix.u.prefix4.s_addr && temp -> peer_received_from -> local_as == in_peer -> local_as ){
+        if(temp -> prefix_received  == in_prefix && temp -> peer_received_from -> local_as == in_peer -> local_as ){
             result = temp;
             break;
         }else{
@@ -1159,27 +1159,27 @@ struct received_prefix * get_from_received_prefix(struct received_prefix ** head
     return result;
 }
 
-void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix in_prefix, struct peer* in_peer){
-    struct neighbours_of_a_prefix * new_node = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
-    new_node -> key_prefix = in_prefix;
-    new_node -> peer_list = in_peer;
-
-    new_node -> next = (*head_ref);
-    (*head_ref) = new_node;
-}
-struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix){
-    struct neighbours_of_a_prefix * temp = (*head_ref);
-    struct neighbours_of_a_prefix * result = NULL;
-    while(temp != NULL){
-        if(temp -> key_prefix.u.prefix4.s_addr == in_prefix.u.prefix4.s_addr){
-            result = temp;
-            break;
-        }else{
-            temp = temp -> next;
-        }
-    }
-    return result;
-}
+//void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix* in_prefix, struct peer* in_peer){
+//    struct neighbours_of_a_prefix * new_node = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
+//    new_node -> key_prefix = in_prefix;
+//    new_node -> peer_list = in_peer;
+//
+//    new_node -> next = (*head_ref);
+//    (*head_ref) = new_node;
+//}
+//struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix){
+//    struct neighbours_of_a_prefix * temp = (*head_ref);
+//    struct neighbours_of_a_prefix * result = NULL;
+//    while(temp != NULL){
+//        if(temp -> key_prefix.u.prefix4.s_addr == in_prefix.u.prefix4.s_addr){
+//            result = temp;
+//            break;
+//        }else{
+//            temp = temp -> next;
+//        }
+//    }
+//    return result;
+//}
 /* Allocate new peer object, implicitely locked.  */
 static struct peer *
 peer_new (struct bgp *bgp)
@@ -1218,6 +1218,9 @@ peer_new (struct bgp *bgp)
     peer -> sent = NULL;
     add_to_sent(&(peer -> sent),blah, temp, 8888, "9.8.7.6");
     peer -> received_prefix = NULL;
+    add_to_received_prefix(&(peer -> received_prefix), "5.5.5.5", 5555, temp, 5155);
+
+
 
 //    peer -> sent = initialize_kv_sent(1000);
 //    peer -> cause_RCR = initialize_kv_cause_RCR(1000);

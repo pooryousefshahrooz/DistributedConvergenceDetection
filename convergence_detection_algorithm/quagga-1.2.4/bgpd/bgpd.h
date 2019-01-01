@@ -392,36 +392,38 @@ struct sent{
     struct sent * next;
 };
 extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
+
+
 struct received_prefix{
-    struct prefix prefix_received;
+    char * prefix_received;
     long time_stamp;
     struct peer* peer_received_from;
     long event_id;
     struct received_prefix * next;
 };
 
-extern void add_to_received_prefix(struct received_prefix** head_ref,struct prefix in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id );
-extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, struct prefix in_prefix, struct peer* in_peer);
+extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id );
+extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
 
 
 
 
 
-struct neighbours_of_a_prefix{
-    struct prefix key_prefix;
-    struct peer* peer_list;
-
-    struct neighbours_of_a_prefix * next;
-};
-extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix in_prefix, struct peer* in_peer);
-
-extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix);
-
-struct prefix_neighbour_pair{
-    struct prefix key_prefix;
-    struct peer* value_peer;
-    
-};
+//struct neighbours_of_a_prefix{
+//    struct prefix key_prefix;
+//    struct peer* peer_list;
+//
+//    struct neighbours_of_a_prefix * next;
+//};
+//extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix* in_prefix, struct peer* in_peer);
+//
+//extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix);
+//
+//struct prefix_neighbour_pair{
+//    struct prefix* key_prefix;
+//    struct peer* value_peer;
+//
+//};
 struct peer
 {
 
