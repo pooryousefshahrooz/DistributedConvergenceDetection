@@ -198,7 +198,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   zlog_debug("this is the ip:%s of cause entry with time stamp %ld", temp_cause -> prefix_str, temp_time);
   print_cause(&(peer -> cause));
   zlog_debug("this is the ip in the sent %s", peer -> sent -> prefix);
-
+  print_sent(&(peer -> sent));
 
 
 

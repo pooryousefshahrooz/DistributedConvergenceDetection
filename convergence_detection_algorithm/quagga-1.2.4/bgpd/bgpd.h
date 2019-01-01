@@ -403,8 +403,8 @@ struct sent{
     struct sent * next;
 };
 extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
-
-
+extern void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix );
+extern void print_sent(struct sent ** head_ref);
 
 
 

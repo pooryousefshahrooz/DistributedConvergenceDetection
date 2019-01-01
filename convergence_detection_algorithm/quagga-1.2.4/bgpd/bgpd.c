@@ -1169,7 +1169,21 @@ void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* 
 
 }
 
-
+void print_sent(struct sent ** head_ref){
+    struct sent * temp = (*head_ref);
+    zlog_debug("*********** going to print sent list ********** ");
+    int count = 0;
+    while(temp != NULL){
+        zlog_debug("Going to print node %d of the sent list");
+        zlog_debug("this is the time_stamp %ld", temp -> timestamp);
+        zlog_debug("this is the router_id %ld", temp -> router_id);
+        zlog_debug("this is the prefix %s", temp -> prefix);
+        zlog_debug("this is the neighbour local_as %ld", temp -> neighbour -> local_as);
+        count = count + 1;
+        temp = temp -> next;
+    }
+    zlog_debug("print sent list ends here ");
+}
 
 void add_to_received_prefix(struct received_prefix** head_ref,char * in_prefix, char *in_time_stamp, struct peer* in_peer, u_int32_t in_event_id ){
     struct received_prefix * new_node = (struct received_prefix *) malloc(sizeof(struct received_prefix));
