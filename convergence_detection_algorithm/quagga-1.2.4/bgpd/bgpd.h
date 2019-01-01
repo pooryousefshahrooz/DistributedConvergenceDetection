@@ -487,6 +487,7 @@ struct prefix_neighbour_pair{
 };
 extern void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer);
 extern struct prefix_neighbour_pair * get_from_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix);
+extern void print_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref);
 
 
 //** they end here

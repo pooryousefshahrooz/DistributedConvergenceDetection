@@ -252,13 +252,12 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
   //this is where I am testing the prefix_neighbour_pair data structure
-  struct prefix_neighbour_pair * test_pair = (struct prefix_neighbour_pair *) malloc(sizeof(struct prefix_neighbour_pair));
-  test_pair = get_from_prefix_neighbour_pair(&(peer -> pref_neigh_pair), "44.33.22.11");
+    struct prefix_neighbour_pair * test_pair = (struct prefix_neighbour_pair *) malloc(sizeof(struct prefix_neighbour_pair));
+    test_pair = get_from_prefix_neighbour_pair(&(peer -> pref_neigh_pair), "44.33.22.11");
     zlog_debug("**********************************************************");
     zlog_debug("this is the local_as: %ld  and host: %s of the peer that I sent the update for ", test_pair -> val_peer -> local_as, test_pair -> val_peer -> host);
     zlog_debug("**********************************************************");
-
-
+    print_prefix_neighbour_pair(&(peer -> pref_neigh_pair));
 
 
 

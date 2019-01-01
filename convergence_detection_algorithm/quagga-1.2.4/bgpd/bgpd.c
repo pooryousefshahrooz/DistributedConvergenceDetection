@@ -1320,6 +1320,20 @@ struct prefix_neighbour_pair * get_from_prefix_neighbour_pair(struct prefix_neig
     }
     return result;
 }
+void print_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref){
+    struct prefix_neighbour_pair * temp = (*head_ref);
+    int count = 0;
+    zlog_debug("************ going to print the prefix_neighbour pair list ************");
+    while(temp != NULL){
+        zlog_debug("this is node %d of the prefix_neighbour_pair list", count);
+        zlog_debug("this is the prefix %s ",temp -> prefix);
+        zlog_debug("this is the neighbour's local_as %ld",  temp -> val_peer -> local_as);
+        count = count + 1;
+        temp = temp -> next;
+    }
+    zlog_debug("print prefix_neighbour_pair list ends here ");
+    return;
+}
 
 /* Allocate new peer object, implicitely locked.  */
 static struct peer *
@@ -1411,11 +1425,13 @@ peer_new (struct bgp *bgp)
 
 
     //I am initializing the prefix_neighbour_pair data structure and will print values in recv update method
-    peer -> pref_neigh_pair = (struct prefix_neighbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
+    peer -> pref_neigh_pair = NULL;
     struct peer * check_peer = (struct peer *) malloc(sizeof(struct peer));
     check_peer -> local_as = 4545;
     check_peer -> host = "host 4545";
     add_to_prefix_neighbour_pair(&(peer -> pref_neigh_pair ), "44.33.22.11", check_peer);
+
+//    print_prefix_neighbour_pair(&(peer -> pref_neigh_pair));
 
 
 
