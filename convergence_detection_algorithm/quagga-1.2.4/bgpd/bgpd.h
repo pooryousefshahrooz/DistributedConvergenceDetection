@@ -71,14 +71,6 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 // extern struct kv_cause_NRCR* initialize_kv_cause_NRCR(size_t size);
 
 /* they end here */
-struct converged{
-    long event_id;
-    bool converged_yet;
-    struct converged* next;
-};
-extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
-extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
-extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
 
 
 
@@ -356,6 +348,24 @@ typedef enum
 
 #define BGP_MAX_PACKET_SIZE_OVERFLOW          1024
 
+
+
+
+
+
+
+//Data structures for convergence detection
+
+
+struct converged{
+    long event_id;
+    bool converged_yet;
+    struct converged* next;
+};
+extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
+extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
+extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
+extern void print_converged(struct converged ** head_ref);
 
 struct Node {
     long event_id;

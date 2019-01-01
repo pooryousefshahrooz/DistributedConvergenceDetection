@@ -888,6 +888,21 @@ int get_converged_yet_value(struct converged ** head_ref, long in_event_id){
     return -1;
 }
 
+
+void print_converged(struct converged ** head_ref){
+    struct converged * temp = (*head_ref);
+    zlog_debug("************ Going to pring converged ********");
+    int count = 0;
+    while(temp != NULL){
+        zlog_debug("this is the %d node in the converged list", count);
+        zlog_debug("The evenet id is %ld and the value of converged_yet is %d", temp -> event_id,temp -> converged_yet);
+        count = count + 1;
+        temp = temp -> next;
+    }
+    zlog_debug("************ print converged end here *************");
+    return;
+}
+
 void insert(struct Node** head_ref, long in_event_id, struct peer* in_peer_list)
 {
 
@@ -1321,6 +1336,7 @@ peer_new (struct bgp *bgp)
     peer -> pref_neigh_pair = (struct prefix_neighbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
     struct peer * check_peer = (struct peer *) malloc(sizeof(struct peer));
     check_peer -> local_as = 4545;
+    check_peer -> host = "host 4545";
     add_to_prefix_neighbour_pair(&(peer -> pref_neigh_pair ), "44.33.22.11", check_peer);
 
 

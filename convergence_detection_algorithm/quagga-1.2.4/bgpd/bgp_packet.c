@@ -184,6 +184,8 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   stream_reset (snlri);
   set_converged_yet_true(&(peer -> converged), 12345);
   zlog_debug("this is the peer's converged event_id %ld", get_converged_yet_value(&(peer->converged), 12345));
+  print_converged(&(peer -> converged));
+
   struct Node* t = (struct Node *) malloc(sizeof(struct Node));
   t = getNode(&(peer -> node_list), 112233);
   zlog_debug("this is the peer's sent's first peer's local AS %ld", t-> peer_list -> local_as);
@@ -235,6 +237,8 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   res_rec_pref = get_from_received_prefix(&(peer -> received_prefix), "5.5.5.5", test_peer );
   zlog_debug("this is the time stamp: %s and this is the event_id: %u corresponding to this prefix: %s and this peer AS: %d",res_rec_pref -> time_stamp, res_rec_pref -> event_id, "5.5.5.5", test_peer -> local_as);
 
+
+
   // this is where I am testing the peer -> neighbours_of_a_prefix data structure
   struct neighbours_of_a_prefix * test_neighbour_of_prefix = (struct neighbours_of_a_prefix *) malloc (sizeof(struct neighbours_of_a_prefix));
   test_neighbour_of_prefix = get_from_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix),"6.6.6.6");
@@ -252,7 +256,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   struct prefix_neighbour_pair * test_pair = (struct prefix_neighbour_pair *) malloc(sizeof(struct prefix_neighbour_pair));
   test_pair = get_from_prefix_neighbour_pair(&(peer -> pref_neigh_pair), "44.33.22.11");
     zlog_debug("**********************************************************");
-    zlog_debug("this is the local_as: %ld of the peer that I sent the update for ", test_pair -> val_peer -> local_as);
+    zlog_debug("this is the local_as: %ld  and host: %s of the peer that I sent the update for ", test_pair -> val_peer -> local_as, test_pair -> val_peer -> host);
     zlog_debug("**********************************************************");
 
 
