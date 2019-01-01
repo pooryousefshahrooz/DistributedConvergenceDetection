@@ -1161,10 +1161,30 @@ struct received_prefix * get_from_received_prefix(struct received_prefix ** head
     return result;
 }
 
-void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer* in_peer){
+
+void add_to_peer_list(struct peer_list ** head_ref,struct peer * in_peer){
+    struct peer_list* new_node = (struct peer_list *)malloc(sizeof(struct peer_list));
+    new_node -> peer = in_peer;
+    new_node -> next = (*head_ref);
+    (*head_ref) = new_node;
+}
+
+struct peer * get_peer_by_local_as(struct peer_list ** head_ref, u_int32_t in_local_as){
+    struct peer_list * temp = (*head_ref);
+    while(temp != NULL){
+        if(temp -> peer -> local_as == in_local_as){
+            return temp -> peer;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    return NULL;
+}
+
+void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer_list* in_peer_list){
     struct neighbours_of_a_prefix * new_node = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
     new_node -> key_prefix = in_prefix;
-    new_node -> peer_list = in_peer;
+    new_node -> peer_list = in_peer_list;
 
     new_node -> next = (*head_ref);
     (*head_ref) = new_node;
@@ -1184,7 +1204,7 @@ struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbour
 }
 
 void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer){
-    struct prefix_neighbour_pair * new_node = (struct prefix_neigbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
+    struct prefix_neighbour_pair * new_node = (struct prefix_neighbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
     new_node -> prefix = in_prefix;
     new_node -> val_peer= in_peer;
 
@@ -1288,9 +1308,12 @@ peer_new (struct bgp *bgp)
     temp5 -> local_as = 6864;
     temp6 -> local_as = 6865;
     temp7 -> local_as = 6866;
-    temp5 -> next_peer_for_neighbours_of_a_prefix = temp6;
-    temp6 -> next_peer_for_neighbours_of_a_prefix =temp7;
-    add_to_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix), "6.6.6.6", temp5);
+    struct peer_list* test_peer_list = NULL;
+    add_to_peer_list(&(test_peer_list), temp5);
+    add_to_peer_list(&(test_peer_list), temp6);
+    add_to_peer_list(&(test_peer_list), temp7);
+
+    add_to_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix), "6.6.6.6", test_peer_list);
 
 
 

@@ -238,9 +238,15 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   // this is where I am testing the peer -> neighbours_of_a_prefix data structure
   struct neighbours_of_a_prefix * test_neighbour_of_prefix = (struct neighbours_of_a_prefix *) malloc (sizeof(struct neighbours_of_a_prefix));
   test_neighbour_of_prefix = get_from_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix),"6.6.6.6");
-  zlog_debug("this is the local_as:%ld of the first peer in the first node of neighbours_of_prefix ", test_neighbour_of_prefix -> peer_list -> local_as);
-  zlog_debug("this is the local_as:%ld of the first peer in the first node of neighbours_of_prefix ", test_neighbour_of_prefix -> peer_list -> next_peer_for_neighbours_of_a_prefix ->local_as);
-  zlog_debug("this is the local_as:%ld of the first peer in the first node of neighbours_of_prefix ", test_neighbour_of_prefix -> peer_list -> next_peer_for_neighbours_of_a_prefix -> next_peer_for_neighbours_of_a_prefix -> local_as);
+  struct peer_list* temp_peer_list = test_neighbour_of_prefix -> peer_list;
+    while (temp_peer_list != NULL){
+      zlog_debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+      zlog_debug("this is is the local_as: %ld of each peer in the peer_list", temp_peer_list -> peer -> local_as);
+      zlog_debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+      temp_peer_list = temp_peer_list -> next;
+  }
+
+
 
   //this is where I am testing the prefix_neighbour_pair data structure
   struct prefix_neighbour_pair * test_pair = (struct prefix_neighbour_pair *) malloc(sizeof(struct prefix_neighbour_pair));
@@ -267,7 +273,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
 
-    
+
 
 
 
