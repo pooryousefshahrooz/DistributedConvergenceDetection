@@ -236,7 +236,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   test_peer -> local_as = 6861;
   res_rec_pref = get_from_received_prefix(&(peer -> received_prefix), "5.5.5.5", test_peer );
   zlog_debug("this is the time stamp: %s and this is the event_id: %u corresponding to this prefix: %s and this peer AS: %d",res_rec_pref -> time_stamp, res_rec_pref -> event_id, "5.5.5.5", test_peer -> local_as);
-
+  print_received_prefix(&(peer -> received_prefix));
 
 
   // this is where I am testing the peer -> neighbours_of_a_prefix data structure
@@ -248,8 +248,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
       zlog_debug("this is is the local_as: %ld of each peer in the peer_list", temp_peer_list -> peer -> local_as);
       zlog_debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
       temp_peer_list = temp_peer_list -> next;
-  }
-
+  }print_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix));
 
 
   //this is where I am testing the prefix_neighbour_pair data structure

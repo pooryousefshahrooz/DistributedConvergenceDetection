@@ -1210,7 +1210,22 @@ struct received_prefix * get_from_received_prefix(struct received_prefix ** head
     }
     return result;
 }
+void print_received_prefix(struct received_prefix ** head_ref){
+    struct received_prefix * temp = (*head_ref);
+    zlog_debug("***** Going to print received prefix lsit ****");
+    int count =0;
+    while(temp != NULL){
+        zlog_debug("this is the node %d of the received_prefix ",count);
+        zlog_debug(" this is the prefix_received %s", temp -> prefix_received);
+        zlog_debug(" this is the time_stamp %s", temp -> time_stamp);
+        zlog_debug(" this is the local_as of peer that we received from %ld", temp -> peer_received_from -> local_as);
+        zlog_debug("this is the event_id %ld", temp -> event_id);
+        count = count+1;
+        temp = temp -> next;
+    }
+    zlog_debug("print received_prefix list ends here");
 
+}
 
 void add_to_peer_list(struct peer_list ** head_ref,struct peer * in_peer){
     struct peer_list* new_node = (struct peer_list *)malloc(sizeof(struct peer_list));
@@ -1229,6 +1244,19 @@ struct peer * get_peer_by_local_as(struct peer_list ** head_ref, u_int32_t in_lo
         }
     }
     return NULL;
+}
+void print_peer_list(struct peer_list ** head_ref){
+    struct peer_list * temp = (*head_ref);
+    int count = 0;
+    zlog_debug("********** going to print the peer list ********");
+    while(temp != NULL){
+        zlog_debug("going to print node %d of the peer list", count);
+        zlog_debug("this is the local as of the peer %ld", temp -> peer -> local_as);
+        count = count + 1;
+        temp = temp -> next;
+    }
+    zlog_debug(" print peer list ends here");
+
 }
 
 void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer_list* in_peer_list){
@@ -1251,6 +1279,21 @@ struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbour
         }
     }
     return result;
+}
+
+void print_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref){
+    struct neighbours_of_a_prefix * temp = (*head_ref);
+    int count = 0;
+    zlog_debug("******* going to print neighbours of a prefix list ********");
+    while(temp != NULL){
+        zlog_debug("this is node %d of the list", count);
+        zlog_debug("this is the prefix %s", temp -> key_prefix);
+        print_peer_list(&(temp -> peer_list));
+        count = count + 1;
+        temp = temp -> next;
+    }
+    zlog_debug("print neighbours of a prefix ends here ");
+    return;
 }
 
 void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer){

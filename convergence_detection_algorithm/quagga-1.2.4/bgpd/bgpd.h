@@ -457,14 +457,14 @@ struct received_prefix{
 //only these two functions are needed for this data structure
 extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, char * in_time_stamp, struct peer* in_peer, u_int32_t in_event_id );
 extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
-
+extern void print_received_prefix(struct received_prefix ** head_ref);
 struct peer_list{
     struct peer* peer;
     struct peer_list * next;
 };
 extern void add_to_peer_list(struct peer_list ** head_ref, struct peer * in_peer);
 extern struct peer * get_peer_by_local_as(struct peer_list ** head_ref, u_int32_t in_local_as);
-
+extern void print_peer_list(struct peer_list ** head_ref);
 
 
 struct neighbours_of_a_prefix{
@@ -475,7 +475,7 @@ struct neighbours_of_a_prefix{
 };
 extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer_list * in_peer_list);
 extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, char * in_prefix);
-
+extern void print_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref);
 
 
 
