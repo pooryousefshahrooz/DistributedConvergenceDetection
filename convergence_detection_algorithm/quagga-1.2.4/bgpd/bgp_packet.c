@@ -198,6 +198,8 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   zlog_debug("this is the ip in the sent %s", peer -> sent -> prefix);
 
 
+
+  //this is where I am testing the peer -> received_prefix data structure
   struct received_prefix * res_rec_pref = (struct received_prefix *) malloc(sizeof(struct received_prefix));
   struct peer * test_peer = (struct peer *) malloc(sizeof(struct peer));
   test_peer -> local_as = 6861;

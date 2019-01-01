@@ -394,6 +394,8 @@ struct sent{
 extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
 
 
+
+//this is the received_prefix data structure, and it has the following variables. I declare the data structure as part of the peer struct down.
 struct received_prefix{
     char * prefix_received;
     long time_stamp;
@@ -402,6 +404,8 @@ struct received_prefix{
     struct received_prefix * next;
 };
 
+
+//only these two functions are needed for this data structure
 extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id );
 extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
 
@@ -436,6 +440,8 @@ struct peer
     struct Node* node_list;
     struct cause* cause;
     struct sent * sent;
+
+    //sharooz this is the data structure. I have declared it here. I will initialize it in bgpd.c in method peer_new().
     struct received_prefix * received_prefix;
   /* these are the declarations for data structures specific to convergence detection */
   // struct kv_converged * converged;

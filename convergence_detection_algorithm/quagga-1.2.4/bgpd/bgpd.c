@@ -1133,6 +1133,8 @@ void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* 
 
 }
 
+
+
 void add_to_received_prefix(struct received_prefix** head_ref,char * in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id ){
     struct received_prefix * new_node = (struct received_prefix *) malloc(sizeof(struct received_prefix));
     new_node -> prefix_received = in_prefix;
@@ -1217,9 +1219,12 @@ peer_new (struct bgp *bgp)
 
     peer -> sent = NULL;
     add_to_sent(&(peer -> sent),blah, temp, 8888, "9.8.7.6");
-    peer -> received_prefix = NULL;
-    add_to_received_prefix(&(peer -> received_prefix), "5.5.5.5", 5555, temp, 5155);
 
+    //this is where I initialize the data structure
+    peer -> received_prefix = NULL;
+    //adding a fake entry to the data structure
+    add_to_received_prefix(&(peer -> received_prefix), "5.5.5.5", 5555, temp, 5155);
+    // I will print this value in the update receive method in bgp_packet.c
 
 
 //    peer -> sent = initialize_kv_sent(1000);
