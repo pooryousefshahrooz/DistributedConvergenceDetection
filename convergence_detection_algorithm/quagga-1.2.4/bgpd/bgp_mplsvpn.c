@@ -206,7 +206,7 @@ bgp_nlri_parse_vpn (struct peer *peer, struct attr *attr,
 
       if (attr)
         bgp_update (peer, &p, attr, packet->afi, SAFI_MPLS_VPN,
-                    ZEBRA_ROUTE_BGP, BGP_ROUTE_NORMAL, &prd, tagpnt, 0);
+                    ZEBRA_ROUTE_BGP, BGP_ROUTE_NORMAL, &prd, tagpnt, 0,0,"0");
       else
         bgp_withdraw (peer, &p, attr, packet->afi, SAFI_MPLS_VPN,
                       ZEBRA_ROUTE_BGP, BGP_ROUTE_NORMAL, &prd, tagpnt);

@@ -37,6 +37,16 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_fsm.h"
 #include "bgpd/bgp_mplsvpn.h"
 
+extern struct peer *sent_peers;
+extern struct peer *to_be_sent_peers;
+extern struct peer *waiting_peers;
+extern uint32_t rec_time_stamp;
+extern uint32_t rec_root_cause_event_id;
+extern uint32_t rec_root_cause_event_owner_router_id;
+
+extern uint32_t root_cause_event_owner;
+
+
 /* BGP advertise attribute is used for pack same attribute update into
    one packet.  To do that we maintain attribute hash in struct
    peer.  */
@@ -269,7 +279,11 @@ bgp_adj_out_set (struct bgp_node *rn, struct peer *peer, struct prefix *p,
   bgp_advertise_add (adv->baa, adv);
 
 
-  zlog_debug (" we added %s to BGP_ADV_FIFO_ADD ",peer->host);
+  zlog_debug (" we added %s to BGP_ADV_FIFO_ADD of %s",peer->host);
+  //to_be_sent_peers = peer;
+
+  //zlog_debug (" we added and this is the value of to_be_sent_peers %s ",to_be_sent_peers->host);
+
 
 
 

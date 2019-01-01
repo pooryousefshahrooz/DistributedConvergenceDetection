@@ -20,9 +20,67 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef _QUAGGA_BGPD_H
 #define _QUAGGA_BGPD_H
-
+#include <stdbool.h>
+#include "/etc/quagga/quagga/lib/prefix.h"
 /* For union sockunion.  */
 #include "sockunion.h"
+
+/* these are data structures I am gonna use for convergence detection*/
+// typedef struct kv_converged {
+//     int size_of_list;
+//     int key_event_identifier;
+//     bool value_converged_yet;
+
+// } kv_converged;
+
+
+// typedef struct kv_sent{
+//     int size_of_list;
+//     int key_event_identifier;
+//     int value_neighbour_id;
+//     char *value_prefix;
+//     int value_timestamp;
+//     int value_own_router_id;
+
+// } kv_sent;
+
+// typedef struct kv_cause_RCR{
+//     int size_of_list;
+//     int key_timestamp;
+//     char *value_Message_indicator ;
+//     int value_event_identifier;
+//     int value_router_id;
+// }kv_cause_RCR;
+
+// typedef struct kv_cause_NRCR{
+//     int size_of_list;
+//     int key_timestamp;
+//     char *value_Message_indicator;
+//     int value_event_identifier;
+//     char * value_prefix;
+//     char * value_asPath;
+//     int value_timestamp;
+//     int value_neighbour_id;
+// } kv_cause_NRCR;
+// /* they end here */
+
+// /* Function headers for initialization functions speciific to data structures for convergence detection*/
+// extern struct kv_converged * initialize_kv_converged(size_t size);
+// extern struct kv_sent* initialize_kv_sent(size_t size);
+// extern struct kv_cause_RCR* initialize_kv_cause_RCR(size_t size);
+// extern struct kv_cause_NRCR* initialize_kv_cause_NRCR(size_t size);
+
+/* they end here */
+struct converged{
+    long event_id;
+    bool converged_yet;
+    struct converged* next;
+};
+extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
+extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
+extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
+
+
 
 /* Typedef BGP specific types.  */
 typedef u_int32_t as_t;
@@ -34,6 +92,7 @@ struct bgp_master
 {
   /* BGP instance list.  */
   struct list *bgp;
+
 
   /* BGP thread master.  */
   struct thread_master *master;
@@ -62,9 +121,16 @@ struct bgp_master
 #define BGP_OPT_NO_LISTEN                (1 << 3)
 };
 
+
+
+
+
+
+
 /* BGP instance structure.  */
 struct bgp 
 {
+
   /* AS number of this BGP instance.  */
   as_t as;
 
@@ -85,6 +151,7 @@ struct bgp
 
   /* BGP route-server-clients. */
   struct list *rsclient;
+
 
   /* BGP configuration.  */
   u_int16_t config;
@@ -130,6 +197,10 @@ struct bgp
   u_int16_t af_flags[AFI_MAX][SAFI_MAX];
 #define BGP_CONFIG_DAMPENING              (1 << 0)
 
+
+
+
+
   /* Static route configuration.  */
   struct bgp_table *route[AFI_MAX][SAFI_MAX];
 
@@ -146,7 +217,12 @@ struct bgp
   u_char redist_metric_flag[AFI_MAX][ZEBRA_ROUTE_MAX];
   u_int32_t redist_metric[AFI_MAX][ZEBRA_ROUTE_MAX];
 
-  /* BGP redistribute route-map.  */
+
+//    struct kv_converged *converged;
+
+
+
+    /* BGP redistribute route-map.  */
   struct
   {
     char *name;
@@ -280,7 +356,161 @@ typedef enum
 
 #define BGP_MAX_PACKET_SIZE_OVERFLOW          1024
 
+
+struct Node {
+    long event_id;
+    struct peer* peer_list;
+    struct Node* next;
+    struct Node* prev;
+};
+
+extern void insert(struct Node** head_ref,long  in_event_id, struct peer* peer_list);
+extern void printList(struct Node* node);
+extern void delete_node(struct Node** head_ref, long in_event_id);
+extern struct Node* getNode(struct Node** head_ref, long in_event_id);
 /* BGP neighbor structure. */
+
+struct cause{
+    time_t new_timestamp;
+    char message_type;
+    long event_id;
+    long router_id;
+    char * prefix_str;
+    char * as_path;
+    time_t received_timestamp;
+    struct peer* neighbour;
+
+    struct cause* next;
+};
+extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
+extern struct cause* getcause(struct cause** head_ref, time_t in_timestamp);
+struct sent{
+    time_t timestamp;
+    struct peer* neighbour;
+    long router_id;
+    char * prefix;
+    struct sent * next;
+};
+extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//** these are the data structure sharooz asked for today.
+
+//this is the received_prefix data structure, and it has the following variables. I declare the data structure as part of the peer struct down.
+struct received_prefix{
+    char * prefix_received;
+    char * time_stamp;
+    struct peer* peer_received_from;
+    u_int32_t event_id;
+    struct received_prefix * next;
+};
+
+
+//only these two functions are needed for this data structure
+extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, char * in_time_stamp, struct peer* in_peer, u_int32_t in_event_id );
+extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
+
+
+struct neighbours_of_a_prefix{
+    char * key_prefix;
+    struct peer* peer_list;
+
+    struct neighbours_of_a_prefix * next;
+};
+extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer* in_peer);
+extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, char * in_prefix);
+
+
+
+
+struct prefix_neighbour_pair{
+    char * prefix;
+    struct peer* val_peer;
+
+    struct prefix_neighbour_pair * next;
+};
+extern void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer);
+extern struct prefix_neighbour_pair * get_from_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix);
+
+
+//** they end here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 struct peer
 {
 
@@ -288,6 +518,51 @@ struct peer
   /* Root cause event information. */
 
   char root_cause_event_info;
+//  struct peer * next_peer;
+    struct converged*  converged;
+    struct Node* node_list;
+    struct cause* cause;
+    struct sent * sent;
+
+
+
+
+
+
+
+
+
+
+
+    //**sharooz these are the data structure. I have declared them here. I will initialize them in bgpd.c in method peer_new().
+    struct received_prefix * received_prefix;
+    struct neighbours_of_a_prefix * neighbours_of_prefix;
+    struct prefix_neighbour_pair *  pref_neigh_pair;
+    //** they end here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //** I defined these for making peer_list in other datastructures.
+    struct peer* next_peer_for_sent;
+    struct peer* next_peer_for_neighbours_of_a_prefix;
+    /* these end here */
+
 
   /* BGP structure.  */
   struct bgp *bgp;
@@ -304,7 +579,7 @@ struct peer
   u_char af_group[AFI_MAX][SAFI_MAX];
 
   /* Peer's remote AS number. */
-  as_t as;			
+  as_t as;      
 
   /* Peer's local AS number. */
   as_t local_as;
@@ -342,28 +617,28 @@ struct peer
   uint16_t table_dump_index;
 
   /* Peer information */
-  int fd;			/* File descriptor */
-  int ttl;			/* TTL of TCP connection to the peer. */
-  int rtt;			/* Estimated round-trip-time from TCP_INFO */
-  int gtsm_hops;		/* minimum hopcount to peer */
-  char *desc;			/* Description of the peer. */
+  int fd;     /* File descriptor */
+  int ttl;      /* TTL of TCP connection to the peer. */
+  int rtt;      /* Estimated round-trip-time from TCP_INFO */
+  int gtsm_hops;    /* minimum hopcount to peer */
+  char *desc;     /* Description of the peer. */
   unsigned short port;          /* Destination port for peer */
-  char *host;			/* Printable address of the peer. */
-  union sockunion su;		/* Sockunion address of the peer. */
-  time_t uptime;		/* Last Up/Down time */
-  time_t readtime;		/* Last read time */
-  time_t resettime;		/* Last reset time */
+  char *host;     /* Printable address of the peer. */
+  union sockunion su;   /* Sockunion address of the peer. */
+  time_t uptime;    /* Last Up/Down time */
+  time_t readtime;    /* Last read time */
+  time_t resettime;   /* Last reset time */
   
-  ifindex_t ifindex;		/* ifindex of the BGP connection. */
-  char *ifname;			/* bind interface name. */
+  ifindex_t ifindex;    /* ifindex of the BGP connection. */
+  char *ifname;     /* bind interface name. */
   char *update_if;
   union sockunion *update_source;
   struct zlog *log;
 
-  union sockunion *su_local;	/* Sockunion of local address.  */
-  union sockunion *su_remote;	/* Sockunion of remote address.  */
-  int shared_network;		/* Is this peer shared same network. */
-  struct bgp_nexthop nexthop;	/* Nexthop */
+  union sockunion *su_local;  /* Sockunion of local address.  */
+  union sockunion *su_remote; /* Sockunion of remote address.  */
+  int shared_network;   /* Is this peer shared same network. */
+  struct bgp_nexthop nexthop; /* Nexthop */
 
   /* Peer address family configuration. */
   u_char afc[AFI_MAX][SAFI_MAX];
@@ -445,7 +720,7 @@ struct peer
 
   /* Peer status flags. */
   u_int16_t sflags;
-#define PEER_STATUS_ACCEPT_PEER	      (1 << 0) /* accept peer */
+#define PEER_STATUS_ACCEPT_PEER       (1 << 0) /* accept peer */
 #define PEER_STATUS_PREFIX_OVERFLOW   (1 << 1) /* prefix-overflow */
 #define PEER_STATUS_CAPABILITY_OPEN   (1 << 2) /* capability open send */
 #define PEER_STATUS_OPEN_DEFERRED     (1 << 3) /* deferred to open_receive */
@@ -500,23 +775,23 @@ struct peer
   struct work_queue *clear_node_queue;
   
   /* Statistics field */
-  u_int32_t open_in;		/* Open message input count */
-  u_int32_t open_out;		/* Open message output count */
-  u_int32_t update_in;		/* Update message input count */
-  u_int32_t update_out;		/* Update message ouput count */
-  time_t update_time;		/* Update message received time. */
-  u_int32_t keepalive_in;	/* Keepalive input count */
-  u_int32_t keepalive_out;	/* Keepalive output count */
-  u_int32_t notify_in;		/* Notify input count */
-  u_int32_t notify_out;		/* Notify output count */
-  u_int32_t refresh_in;		/* Route Refresh input count */
-  u_int32_t refresh_out;	/* Route Refresh output count */
-  u_int32_t dynamic_cap_in;	/* Dynamic Capability input count.  */
-  u_int32_t dynamic_cap_out;	/* Dynamic Capability output count.  */
+  u_int32_t open_in;    /* Open message input count */
+  u_int32_t open_out;   /* Open message output count */
+  u_int32_t update_in;    /* Update message input count */
+  u_int32_t update_out;   /* Update message ouput count */
+  time_t update_time;   /* Update message received time. */
+  u_int32_t keepalive_in; /* Keepalive input count */
+  u_int32_t keepalive_out;  /* Keepalive output count */
+  u_int32_t notify_in;    /* Notify input count */
+  u_int32_t notify_out;   /* Notify output count */
+  u_int32_t refresh_in;   /* Route Refresh input count */
+  u_int32_t refresh_out;  /* Route Refresh output count */
+  u_int32_t dynamic_cap_in; /* Dynamic Capability input count.  */
+  u_int32_t dynamic_cap_out;  /* Dynamic Capability output count.  */
 
   /* BGP state count */
-  u_int32_t established;	/* Established */
-  u_int32_t dropped;		/* Dropped */
+  u_int32_t established;  /* Established */
+  u_int32_t dropped;    /* Dropped */
 
   /* Syncronization list and time.  */
   struct bgp_synchronize *sync[AFI_MAX][SAFI_MAX];
@@ -590,8 +865,8 @@ struct peer
   
 };
 
-#define PEER_PASSWORD_MINLEN	(1)
-#define PEER_PASSWORD_MAXLEN	(80)
+#define PEER_PASSWORD_MINLEN  (1)
+#define PEER_PASSWORD_MAXLEN  (80)
 
 /* This structure's member directly points incoming packet data
    stream. */
@@ -611,14 +886,14 @@ struct bgp_nlri
 };
 
 /* BGP versions.  */
-#define BGP_VERSION_4		                 4
+#define BGP_VERSION_4                    4
 
 /* Default BGP port number.  */
 #define BGP_PORT_DEFAULT                       179
 
 /* BGP message header and packet size.  */
-#define BGP_MARKER_SIZE		                16
-#define BGP_HEADER_SIZE		                19
+#define BGP_MARKER_SIZE                   16
+#define BGP_HEADER_SIZE                   19
 #define BGP_MAX_PACKET_SIZE                   4096
 
 /* BGP minimum message size.  */
@@ -630,14 +905,16 @@ struct bgp_nlri
 #define BGP_MSG_CAPABILITY_MIN_SIZE             (BGP_HEADER_SIZE + 3)
 
 /* BGP message types.  */
-#define	BGP_MSG_OPEN		                 1
-#define	BGP_MSG_UPDATE		                 2
-#define	BGP_MSG_NOTIFY		                 3
-#define	BGP_MSG_KEEPALIVE	                 4
+#define BGP_MSG_OPEN                     1
+#define BGP_MSG_UPDATE                     2
+#define BGP_MSG_NOTIFY                     3
+#define BGP_MSG_KEEPALIVE                  4
 #define BGP_MSG_ROUTE_REFRESH_NEW                5
 #define BGP_MSG_CAPABILITY                       6
 #define BGP_MSG_ROUTE_REFRESH_OLD              128
 #define BGP_MSG_FIZZLE                   63
+#define BGP_MSG_CONVERGENCE                   114
+
 /* BGP open optional parameter.  */
 #define BGP_OPEN_OPT_AUTH                        1
 #define BGP_OPEN_OPT_CAP                         2
@@ -678,7 +955,7 @@ struct bgp_nlri
 #define BGP_NOTIFY_FSM_ERR                       5
 #define BGP_NOTIFY_CEASE                         6
 #define BGP_NOTIFY_CAPABILITY_ERR                7
-#define BGP_NOTIFY_MAX	                         8
+#define BGP_NOTIFY_MAX                           8
 
 #define BGP_NOTIFY_SUBCODE_UNSPECIFIC            0
 
@@ -763,7 +1040,7 @@ struct bgp_nlri
 #define BGP_INIT_START_TIMER                     1
 #define BGP_DEFAULT_HOLDTIME                   180
 #define BGP_DEFAULT_KEEPALIVE                    60 
-#define BGP_DEFAULT_EBGP_ROUTEADV                30
+#define BGP_DEFAULT_EBGP_ROUTEADV                1
 #define BGP_DEFAULT_IBGP_ROUTEADV                1
 #define BGP_DEFAULT_CONNECT_RETRY                5
 
@@ -837,11 +1114,11 @@ enum bgp_clear_type
 #define BGP_ERR_INSTANCE_MISMATCH               -26
 #define BGP_ERR_LOCAL_AS_ALLOWED_ONLY_FOR_EBGP  -27
 #define BGP_ERR_CANNOT_HAVE_LOCAL_AS_SAME_AS    -28
-#define BGP_ERR_TCPSIG_FAILED			-29
-#define BGP_ERR_NO_EBGP_MULTIHOP_WITH_TTLHACK	-30
-#define BGP_ERR_NO_IBGP_WITH_TTLHACK		-31
+#define BGP_ERR_TCPSIG_FAILED     -29
+#define BGP_ERR_NO_EBGP_MULTIHOP_WITH_TTLHACK -30
+#define BGP_ERR_NO_IBGP_WITH_TTLHACK    -31
 #define BGP_ERR_CANNOT_HAVE_LOCAL_AS_SAME_AS_REMOTE_AS    -32
-#define BGP_ERR_MAX				-33
+#define BGP_ERR_MAX       -33
 
 extern struct bgp_master *bm;
 
@@ -851,7 +1128,7 @@ extern void bgp_reset (void);
 extern time_t bgp_clock (void);
 extern void bgp_zclient_reset (void);
 extern int bgp_nexthop_set (union sockunion *, union sockunion *, 
-		     struct bgp_nexthop *, struct peer *);
+         struct bgp_nexthop *, struct peer *);
 extern struct bgp *bgp_get_default (void);
 extern struct bgp *bgp_lookup (as_t, const char *);
 extern struct bgp *bgp_lookup_by_name (const char *);
@@ -859,7 +1136,7 @@ extern struct peer *peer_lookup (struct bgp *, union sockunion *);
 extern struct peer_group *peer_group_lookup (struct bgp *, const char *);
 extern struct peer_group *peer_group_get (struct bgp *, const char *);
 extern struct peer *peer_lookup_with_open (union sockunion *, as_t, struct in_addr *,
-				    int *);
+            int *);
 
 /*
  * Peers are incredibly easy to memory leak
@@ -931,9 +1208,9 @@ extern int peer_deactivate (struct peer *, afi_t, safi_t);
 extern int peer_afc_set (struct peer *, afi_t, safi_t, int);
 
 extern int peer_group_bind (struct bgp *, union sockunion *, struct peer_group *,
-		     afi_t, safi_t, as_t *);
+         afi_t, safi_t, as_t *);
 extern int peer_group_unbind (struct bgp *, struct peer *, struct peer_group *,
-		       afi_t, safi_t);
+           afi_t, safi_t);
 
 extern int peer_flag_set (struct peer *, u_int32_t);
 extern int peer_flag_unset (struct peer *, u_int32_t);

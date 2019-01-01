@@ -68,6 +68,8 @@ struct ethaddr {
 /* IPv4 and IPv6 unified prefix structure. */
 struct prefix
 {
+    /* root cause event ID */
+  //uint32_t prefix_root_cause_event_id;
   u_char family;
   u_char prefixlen;
   union 

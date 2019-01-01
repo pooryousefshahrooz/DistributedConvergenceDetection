@@ -228,7 +228,7 @@ bgp_nlri_parse_encap(
 
       if (attr) {
 	bgp_update (peer, &p, attr, afi, SAFI_ENCAP,
-		    ZEBRA_ROUTE_BGP, BGP_ROUTE_NORMAL, &prd, NULL, 0);
+		    ZEBRA_ROUTE_BGP, BGP_ROUTE_NORMAL, &prd, NULL, 0,0,"0");
       } else {
 	bgp_withdraw (peer, &p, attr, afi, SAFI_ENCAP,
 		      ZEBRA_ROUTE_BGP, BGP_ROUTE_NORMAL, &prd, NULL);

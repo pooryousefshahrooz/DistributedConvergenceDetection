@@ -42,6 +42,14 @@ Boston, MA 02111-1307, USA.  */
 #include "bgpd/bgp_nexthop.h"
 #include "bgpd/bgp_nht.h"
 
+extern struct peer *sent_peers;
+extern struct peer *to_be_sent_peers;
+extern struct peer *waiting_peers;
+extern uint32_t rec_time_stamp;
+extern uint32_t rec_root_cause_event_id;
+extern uint32_t rec_root_cause_event_owner_router_id;
+
+
 /* All information about zebra. */
 struct zclient *zclient = NULL;
 struct in_addr router_id_zebra;
@@ -697,6 +705,9 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
   zlog_debug ("we are in bgp_zebra_announce");
 
 
+
+
+
   int flags;
   u_char distance;
   struct peer *peer;
@@ -984,6 +995,10 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 void
 bgp_zebra_withdraw (struct prefix *p, struct bgp_info *info, safi_t safi)
 {
+
+
+        zlog_debug ("We are at bgp_zebra_withdraw.");
+
   int flags;
   struct peer *peer;
 

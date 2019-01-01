@@ -103,6 +103,7 @@ struct attr_extra
 /* BGP core attribute structure. */
 struct attr
 {
+
   /* AS Path structure */
   struct aspath *aspath;
 

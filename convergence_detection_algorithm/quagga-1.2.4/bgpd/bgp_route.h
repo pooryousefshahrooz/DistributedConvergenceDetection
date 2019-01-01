@@ -219,7 +219,7 @@ extern struct bgp_info_extra *bgp_info_extra_get (struct bgp_info *);
 extern void bgp_info_set_flag (struct bgp_node *, struct bgp_info *, u_int32_t);
 extern void bgp_info_unset_flag (struct bgp_node *, struct bgp_info *, u_int32_t);
 
-extern int bgp_nlri_parse_ip (struct peer *, struct attr *, struct bgp_nlri *);
+extern int bgp_nlri_parse_ip (struct peer *, struct attr *, struct bgp_nlri *,uint32_t,u_char );
 
 extern int bgp_maximum_prefix_overflow (struct peer *, afi_t, safi_t, int);
 
@@ -243,7 +243,7 @@ extern int bgp_static_unset_safi (safi_t safi, struct vty *, const char *,
 /* this is primarily for MPLS-VPN */
 extern int bgp_update (struct peer *, struct prefix *, struct attr *,
 		       afi_t, safi_t, int, int, struct prefix_rd *, 
-		       u_char *, int);
+		       u_char *, int,uint32_t,u_char);
 extern int bgp_withdraw (struct peer *, struct prefix *, struct attr *,
 			 afi_t, safi_t, int, int, struct prefix_rd *, u_char *);
 

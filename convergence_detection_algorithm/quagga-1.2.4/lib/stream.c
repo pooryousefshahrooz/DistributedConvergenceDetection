@@ -128,7 +128,9 @@ stream_free (struct stream *s)
 struct stream *
 stream_copy (struct stream *new, struct stream *src)
 {
+
   STREAM_VERIFY_SANE (src);
+
   
   assert (new != NULL);
   assert (STREAM_SIZE(new) >= src->endp);
@@ -407,7 +409,31 @@ stream_getl (struct stream *s)
   u_int32_t l;
 
   STREAM_VERIFY_SANE(s);
+  int number_of_bytes;
+  number_of_bytes = STREAM_READABLE (s);
+
+
+  char result10[50]; 
+
+  sprintf(result10, "%u", number_of_bytes); 
+
+  //zlog_debug ("%s 3.this is number of bytes still to be read ", result10);
+
+  int end2;
+
+  end2 = sizeof (u_int32_t);
+
+
+  char result102[50]; 
+
+  sprintf(result102, "%u", end2); 
+
+  //zlog_debug ("%s 3and this is sizeof (u_int32_t)", result102);
+
   
+
+
+
   if (STREAM_READABLE (s) < sizeof (u_int32_t))
     {
       STREAM_BOUND_WARN (s, "get long");
