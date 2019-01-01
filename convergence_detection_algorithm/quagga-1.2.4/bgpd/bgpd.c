@@ -1067,7 +1067,7 @@ void printList(struct Node* node)
 //}
 /* they end herer */
 
-void addcause(struct cause ** head_ref,time_t in_time_stamp, char in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour ){
+void addcause(struct cause ** head_ref,time_t in_time_stamp, char* in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour ){
     struct converged* temp = (*head_ref);
 
     while(temp != NULL){
@@ -1107,6 +1107,27 @@ struct cause* getcause(struct cause** head_ref, time_t in_timestamp){
 
     }
     return result;
+}
+void print_cause(struct cause** head_ref){
+    struct cause * temp = (*head_ref);
+    zlog_debug(" ****** Going to print cause list ******");
+    int count = 0;
+    while(temp != NULL){
+        zlog_debug("Going to print node %d of the cause list", count);
+        zlog_debug("this is the new_timestamp: %ld", temp-> new_timestamp);
+        zlog_debug("this is the message_type: %s", temp -> message_type);
+        zlog_debug("this is the event_id %ld", temp -> event_id);
+        zlog_debug("this is the router_id %ld", temp -> router_id);
+        zlog_debug("this is the prefix %s", temp -> prefix_str);
+        zlog_debug("this is the as_path %s", temp -> as_path);
+        zlog_debug("this is the received_timestamp: %ld ", temp -> received_timestamp );
+        zlog_debug("this is the neigbour local_as %ld", temp -> neighbour -> local_as);
+        zlog_debug("this is the neighbour_host %s", temp -> neighbour -> host);
+        count = count + 1;
+        temp = temp -> next;
+    }
+    zlog_debug("print cause list ends here");
+    return;
 }
 
 void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix){

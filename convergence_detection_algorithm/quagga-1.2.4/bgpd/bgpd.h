@@ -382,7 +382,7 @@ extern struct Node* getNode(struct Node** head_ref, long in_event_id);
 
 struct cause{
     time_t new_timestamp;
-    char message_type;
+    char* message_type;
     long event_id;
     long router_id;
     char * prefix_str;
@@ -392,8 +392,9 @@ struct cause{
 
     struct cause* next;
 };
-extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
+extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char* in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
 extern struct cause* getcause(struct cause** head_ref, time_t in_timestamp);
+extern void print_cause(struct cause** head_ref);
 struct sent{
     time_t timestamp;
     struct peer* neighbour;

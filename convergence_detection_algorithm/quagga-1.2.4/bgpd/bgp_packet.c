@@ -196,7 +196,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
   time_t temp_time = 5478;
   temp_cause = getcause(&(peer -> cause), temp_time);
   zlog_debug("this is the ip:%s of cause entry with time stamp %ld", temp_cause -> prefix_str, temp_time);
-
+  print_cause(&(peer -> cause));
   zlog_debug("this is the ip in the sent %s", peer -> sent -> prefix);
 
 
