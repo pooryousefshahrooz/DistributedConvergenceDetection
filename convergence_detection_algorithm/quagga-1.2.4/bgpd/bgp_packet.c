@@ -199,18 +199,79 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   //this is where I am testing the peer -> received_prefix data structure
   struct received_prefix * res_rec_pref = (struct received_prefix *) malloc(sizeof(struct received_prefix));
   struct peer * test_peer = (struct peer *) malloc(sizeof(struct peer));
   test_peer -> local_as = 6861;
   res_rec_pref = get_from_received_prefix(&(peer -> received_prefix), "5.5.5.5", test_peer );
-  zlog_debug("this is the time stamp: %ld and this is the event_id: %ld corresponding to this prefix: %s and this peer AS: %d",res_rec_pref -> time_stamp, res_rec_pref -> event_id, "5.5.5.5", test_peer -> local_as);
+  zlog_debug("this is the time stamp: %s and this is the event_id: %u corresponding to this prefix: %s and this peer AS: %d",res_rec_pref -> time_stamp, res_rec_pref -> event_id, "5.5.5.5", test_peer -> local_as);
 
-    //  zlog_debug("this is the value of converged %d", peer -> converged[0].value_converged_yet);
+  // this is where I am testing the peer -> neighbours_of_a_prefix data structure
+  struct neighbours_of_a_prefix * test_neighbour_of_prefix = (struct neighbours_of_a_prefix *) malloc (sizeof(struct neighbours_of_a_prefix));
+  test_neighbour_of_prefix = get_from_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix),"6.6.6.6");
+  zlog_debug("this is the local_as:%ld of the first peer in the first node of neighbours_of_prefix ", test_neighbour_of_prefix -> peer_list -> local_as);
+  zlog_debug("this is the local_as:%ld of the first peer in the first node of neighbours_of_prefix ", test_neighbour_of_prefix -> peer_list -> next_peer_for_neighbours_of_a_prefix ->local_as);
+  zlog_debug("this is the local_as:%ld of the first peer in the first node of neighbours_of_prefix ", test_neighbour_of_prefix -> peer_list -> next_peer_for_neighbours_of_a_prefix -> next_peer_for_neighbours_of_a_prefix -> local_as);
+
+  //this is where I am testing the prefix_neighbour_pair data structure
+  struct prefix_neighbour_pair * test_pair = (struct prefix_neighbour_pair *) malloc(sizeof(struct prefix_neighbour_pair));
+  test_pair = get_from_prefix_neighbour_pair(&(peer -> pref_neigh_pair), "44.33.22.11");
+    zlog_debug("**********************************************************");
+    zlog_debug("this is the local_as: %ld of the peer that I sent the update for ", test_pair -> val_peer -> local_as);
+    zlog_debug("**********************************************************");
 
 
 
-//      struct listnode *node, *nnode;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+//    struct listnode *node, *nnode;
 //    struct bgp *bgp;
 //
 //    for (ALL_LIST_ELEMENTS (bm->bgp, node, nnode, bgp)){

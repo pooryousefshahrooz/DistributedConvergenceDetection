@@ -1135,7 +1135,7 @@ void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* 
 
 
 
-void add_to_received_prefix(struct received_prefix** head_ref,char * in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id ){
+void add_to_received_prefix(struct received_prefix** head_ref,char * in_prefix, char *in_time_stamp, struct peer* in_peer, u_int32_t in_event_id ){
     struct received_prefix * new_node = (struct received_prefix *) malloc(sizeof(struct received_prefix));
     new_node -> prefix_received = in_prefix;
     new_node -> time_stamp = in_time_stamp;
@@ -1161,27 +1161,53 @@ struct received_prefix * get_from_received_prefix(struct received_prefix ** head
     return result;
 }
 
-//void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix* in_prefix, struct peer* in_peer){
-//    struct neighbours_of_a_prefix * new_node = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
-//    new_node -> key_prefix = in_prefix;
-//    new_node -> peer_list = in_peer;
-//
-//    new_node -> next = (*head_ref);
-//    (*head_ref) = new_node;
-//}
-//struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix){
-//    struct neighbours_of_a_prefix * temp = (*head_ref);
-//    struct neighbours_of_a_prefix * result = NULL;
-//    while(temp != NULL){
-//        if(temp -> key_prefix.u.prefix4.s_addr == in_prefix.u.prefix4.s_addr){
-//            result = temp;
-//            break;
-//        }else{
-//            temp = temp -> next;
-//        }
-//    }
-//    return result;
-//}
+void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer* in_peer){
+    struct neighbours_of_a_prefix * new_node = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
+    new_node -> key_prefix = in_prefix;
+    new_node -> peer_list = in_peer;
+
+    new_node -> next = (*head_ref);
+    (*head_ref) = new_node;
+}
+struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, char *in_prefix){
+    struct neighbours_of_a_prefix * temp = (*head_ref);
+    struct neighbours_of_a_prefix * result = NULL;
+    while(temp != NULL){
+        if(temp -> key_prefix == in_prefix){
+            result = temp;
+            break;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    return result;
+}
+
+void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer){
+    struct prefix_neighbour_pair * new_node = (struct prefix_neigbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
+    new_node -> prefix = in_prefix;
+    new_node -> val_peer= in_peer;
+
+    new_node -> next = (*head_ref);
+    (*head_ref) = new_node;
+
+
+}
+
+struct prefix_neighbour_pair * get_from_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix){
+    struct prefix_neighbour_pair * temp = (*head_ref);
+    struct prefix_neighbour_pair * result = NULL;
+    while(temp != NULL){
+        if(temp -> prefix == in_prefix){
+            result = temp;
+            break;
+        }else{
+            temp = temp -> next;
+        }
+    }
+    return result;
+}
+
 /* Allocate new peer object, implicitely locked.  */
 static struct peer *
 peer_new (struct bgp *bgp)
@@ -1199,7 +1225,12 @@ peer_new (struct bgp *bgp)
   /* Allocate new peer. */
   peer = XCALLOC (MTYPE_BGP_PEER, sizeof (struct peer));
 
-  /* Set Data structures particular to Convergence detection*/
+
+
+
+
+
+  //** Set Data structures particular to Convergence detection*/
     peer -> converged = NULL;
     insert_in_converged(&(peer -> converged), 12345);
     peer -> node_list = NULL;
@@ -1220,18 +1251,89 @@ peer_new (struct bgp *bgp)
     peer -> sent = NULL;
     add_to_sent(&(peer -> sent),blah, temp, 8888, "9.8.7.6");
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //this is where I initialize the data structure
     peer -> received_prefix = NULL;
     //adding a fake entry to the data structure
-    add_to_received_prefix(&(peer -> received_prefix), "5.5.5.5", 5555, temp, 5155);
+    add_to_received_prefix(&(peer -> received_prefix), "5.5.5.5", "123,45", temp, 5155);
     // I will print this value in the update receive method in bgp_packet.c
 
+    peer -> neighbours_of_prefix = NULL;
+    struct peer* temp5 = (struct peer *) malloc(sizeof(struct peer));
+    struct peer* temp6 = (struct peer *) malloc(sizeof(struct peer));
+    struct peer* temp7 = (struct peer *) malloc(sizeof(struct peer));
+    temp5 -> local_as = 6864;
+    temp6 -> local_as = 6865;
+    temp7 -> local_as = 6866;
+    temp5 -> next_peer_for_neighbours_of_a_prefix = temp6;
+    temp6 -> next_peer_for_neighbours_of_a_prefix =temp7;
+    add_to_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix), "6.6.6.6", temp5);
 
-//    peer -> sent = initialize_kv_sent(1000);
-//    peer -> cause_RCR = initialize_kv_cause_RCR(1000);
-//    peer -> cause_NRCR = initialize_kv_cause_NRCR(1000);
 
-    /* they end here  */
+
+    //I am initializing the prefix_neighbour_pair data structure and will print values in recv update method
+    peer -> pref_neigh_pair = (struct prefix_neighbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
+    struct peer * check_peer = (struct peer *) malloc(sizeof(struct peer));
+    check_peer -> local_as = 4545;
+    add_to_prefix_neighbour_pair(&(peer -> pref_neigh_pair ), "44.33.22.11", check_peer);
+
+
+
+
+
+
+
+/////* they end here  *//////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

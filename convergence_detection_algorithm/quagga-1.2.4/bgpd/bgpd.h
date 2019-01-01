@@ -395,39 +395,122 @@ extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct pee
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//** these are the data structure sharooz asked for today.
+
 //this is the received_prefix data structure, and it has the following variables. I declare the data structure as part of the peer struct down.
 struct received_prefix{
     char * prefix_received;
-    long time_stamp;
+    char * time_stamp;
     struct peer* peer_received_from;
-    long event_id;
+    u_int32_t event_id;
     struct received_prefix * next;
 };
 
 
 //only these two functions are needed for this data structure
-extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, long in_time_stamp, struct peer* in_peer, long in_event_id );
+extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, char * in_time_stamp, struct peer* in_peer, u_int32_t in_event_id );
 extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
 
 
+struct neighbours_of_a_prefix{
+    char * key_prefix;
+    struct peer* peer_list;
+
+    struct neighbours_of_a_prefix * next;
+};
+extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer* in_peer);
+extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, char * in_prefix);
 
 
 
-//struct neighbours_of_a_prefix{
-//    struct prefix key_prefix;
-//    struct peer* peer_list;
-//
-//    struct neighbours_of_a_prefix * next;
-//};
-//extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, struct prefix* in_prefix, struct peer* in_peer);
-//
-//extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, struct prefix in_prefix);
-//
-//struct prefix_neighbour_pair{
-//    struct prefix* key_prefix;
-//    struct peer* value_peer;
-//
-//};
+
+struct prefix_neighbour_pair{
+    char * prefix;
+    struct peer* val_peer;
+
+    struct prefix_neighbour_pair * next;
+};
+extern void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer);
+extern struct prefix_neighbour_pair * get_from_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix);
+
+
+//** they end here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 struct peer
 {
 
@@ -441,13 +524,41 @@ struct peer
     struct cause* cause;
     struct sent * sent;
 
-    //sharooz this is the data structure. I have declared it here. I will initialize it in bgpd.c in method peer_new().
+
+
+
+
+
+
+
+
+
+
+    //**sharooz these are the data structure. I have declared them here. I will initialize them in bgpd.c in method peer_new().
     struct received_prefix * received_prefix;
-  /* these are the declarations for data structures specific to convergence detection */
-  // struct kv_converged * converged;
-  // struct kv_sent * sent;
-  // struct kv_cause_RCR * cause_RCR;
-  // struct kv_cause_NRCR * cause_NRCR;
+    struct neighbours_of_a_prefix * neighbours_of_prefix;
+    struct prefix_neighbour_pair *  pref_neigh_pair;
+    //** they end here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //** I defined these for making peer_list in other datastructures.
     struct peer* next_peer_for_sent;
     struct peer* next_peer_for_neighbours_of_a_prefix;
     /* these end here */
