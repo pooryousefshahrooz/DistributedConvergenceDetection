@@ -1340,9 +1340,10 @@ void print_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref){
     return;
 }
 
-void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer){
+void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char *in_prefix, struct peer * in_peer){
     struct prefix_neighbour_pair * new_node2 = (struct prefix_neighbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
-    new_node2 -> my_prefix = in_prefix;
+     
+     strncpy(new_node2 -> my_prefix, in_prefix, 100);
     new_node2 -> val_peer= in_peer;
 
     new_node2 -> next = (*head_ref);

@@ -2695,10 +2695,10 @@ sprintf(char_passed_time_stamp, "%u", passed_time_stamp);
 
     char my_prefix2[] = "160.160.0.0";
 
-    strcpy(my_prefix,inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN));
+    //strcpy(my_prefix,inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN));
 
     //char my_prefix3[] = (inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN));
-    zlog_debug ("........we copied inet_ntop in my_prefix");
+    //zlog_debug ("........we copied inet_ntop in my_prefix");
 
     if (strcmp(my_prefix2 , inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN))==0)
       zlog_debug ("..................................................... %s and %s are  same",my_prefix2,inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN));
