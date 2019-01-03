@@ -36,6 +36,8 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_packet.h"
 #include "bgpd/bgp_fsm.h"
 #include "bgpd/bgp_mplsvpn.h"
+#include <stdio.h>
+#include <string.h>
 
 extern struct peer *sent_peers;
 extern struct peer *to_be_sent_peers;
@@ -279,7 +281,7 @@ bgp_adj_out_set (struct bgp_node *rn, struct peer *peer, struct prefix *p,
   bgp_advertise_add (adv->baa, adv);
 
 
-  zlog_debug (" we added %s to BGP_ADV_FIFO_ADD of %s",peer->host);
+  //zlog_debug (" we added %s to BGP_ADV_FIFO_ADD of %s",peer->host);
   //to_be_sent_peers = peer;
 
   //zlog_debug (" we added and this is the value of to_be_sent_peers %s ",to_be_sent_peers->host);

@@ -57,6 +57,6 @@ extern void bgp_default_withdraw_send (struct peer *, afi_t, safi_t);
 
 extern int bgp_capability_receive (struct peer *, bgp_size_t);
 
-extern int bgp_nlri_parse (struct peer *, struct attr *, struct bgp_nlri *,uint32_t,u_char);
+extern int bgp_nlri_parse (struct peer *, struct attr *, struct bgp_nlri *,uint32_t,uint32_t);
 
 #endif /* _QUAGGA_BGP_PACKET_H */

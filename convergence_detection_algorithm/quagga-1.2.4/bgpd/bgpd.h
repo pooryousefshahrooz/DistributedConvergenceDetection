@@ -24,6 +24,8 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "/etc/quagga/quagga/lib/prefix.h"
 /* For union sockunion.  */
 #include "sockunion.h"
+#include <stdio.h>
+#include <string.h>
 
 /* these are data structures I am gonna use for convergence detection*/
 // typedef struct kv_converged {
@@ -71,14 +73,6 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 // extern struct kv_cause_NRCR* initialize_kv_cause_NRCR(size_t size);
 
 /* they end here */
-struct converged{
-    long event_id;
-    bool converged_yet;
-    struct converged* next;
-};
-extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
-extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
-extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
 
 
 
@@ -357,6 +351,24 @@ typedef enum
 #define BGP_MAX_PACKET_SIZE_OVERFLOW          1024
 
 
+
+
+
+
+
+//Data structures for convergence detection
+
+
+struct converged{
+    long event_id;
+    bool converged_yet;
+    struct converged* next;
+};
+extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
+extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
+extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
+extern void print_converged(struct converged ** head_ref);
+
 struct Node {
     long event_id;
     struct peer* peer_list;
@@ -372,7 +384,7 @@ extern struct Node* getNode(struct Node** head_ref, long in_event_id);
 
 struct cause{
     time_t new_timestamp;
-    char message_type;
+    char* message_type;
     long event_id;
     long router_id;
     char * prefix_str;
@@ -382,8 +394,9 @@ struct cause{
 
     struct cause* next;
 };
-extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
+extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char* in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
 extern struct cause* getcause(struct cause** head_ref, time_t in_timestamp);
+extern void print_cause(struct cause** head_ref);
 struct sent{
     time_t timestamp;
     struct peer* neighbour;
@@ -392,8 +405,8 @@ struct sent{
     struct sent * next;
 };
 extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
-
-
+extern void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix );
+extern void print_sent(struct sent ** head_ref);
 
 
 
@@ -446,28 +459,37 @@ struct received_prefix{
 //only these two functions are needed for this data structure
 extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, char * in_time_stamp, struct peer* in_peer, u_int32_t in_event_id );
 extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
+extern void print_received_prefix(struct received_prefix ** head_ref);
+struct peer_list{
+    struct peer* peer;
+    struct peer_list * next;
+};
+extern void add_to_peer_list(struct peer_list ** head_ref, struct peer * in_peer);
+extern struct peer * get_peer_by_local_as(struct peer_list ** head_ref, u_int32_t in_local_as);
+extern void print_peer_list(struct peer_list ** head_ref);
 
 
 struct neighbours_of_a_prefix{
     char * key_prefix;
-    struct peer* peer_list;
+    struct peer_list* peer_list;
 
     struct neighbours_of_a_prefix * next;
 };
-extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer* in_peer);
+extern void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char * in_prefix, struct peer_list * in_peer_list);
 extern struct neighbours_of_a_prefix * get_from_neighbours_of_a_prefix(struct neighbours_of_a_prefix** head_ref, char * in_prefix);
-
+extern void print_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref);
 
 
 
 struct prefix_neighbour_pair{
-    char * prefix;
+    char * my_prefix;
     struct peer* val_peer;
 
     struct prefix_neighbour_pair * next;
 };
 extern void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix, struct peer * in_peer);
 extern struct prefix_neighbour_pair * get_from_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char * in_prefix);
+extern void print_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref);
 
 
 //** they end here
@@ -560,7 +582,6 @@ struct peer
 
     //** I defined these for making peer_list in other datastructures.
     struct peer* next_peer_for_sent;
-    struct peer* next_peer_for_neighbours_of_a_prefix;
     /* these end here */
 
 
@@ -914,7 +935,6 @@ struct bgp_nlri
 #define BGP_MSG_ROUTE_REFRESH_OLD              128
 #define BGP_MSG_FIZZLE                   63
 #define BGP_MSG_CONVERGENCE                   114
-
 /* BGP open optional parameter.  */
 #define BGP_OPEN_OPT_AUTH                        1
 #define BGP_OPEN_OPT_CAP                         2
