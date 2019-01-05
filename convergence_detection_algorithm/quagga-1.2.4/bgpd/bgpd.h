@@ -383,18 +383,18 @@ extern struct Node* getNode(struct Node** head_ref, uint32_t in_event_id);
 /* BGP neighbor structure. */
 
 struct cause{
-    char * new_timestamp[100];
-    char* message_type;
+    char *new_timestamp[100];
+    char *message_type[100];
     uint32_t event_id;
     uint32_t router_id;
     char * prefix_str[100];
     char * as_path;
-    char received_timestamp;
+    char *received_timestamp[100];
     struct peer* neighbour;
 
     struct cause* next;
 };
-extern void addcause(struct cause ** head_ref,char  * in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char in_received_timestamp, struct peer* in_neighbour );
+extern void addcause(struct cause ** head_ref,char  * in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char* in_received_timestamp, struct peer* in_neighbour );
 extern struct cause* getcause(struct cause** head_ref, char * in_timestamp);
 extern void print_cause(struct cause** head_ref);
 struct sent{

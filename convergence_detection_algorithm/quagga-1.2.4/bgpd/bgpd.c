@@ -1104,7 +1104,7 @@ void printList(struct Node* node)
 //}
 /* they end herer */
 
-void addcause(struct cause ** head_ref,char *in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char in_received_timestamp, struct peer* in_neighbour ){
+void addcause(struct cause ** head_ref,char *in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char* in_received_timestamp, struct peer* in_neighbour ){
     struct converged* temp = (*head_ref);
 
     // while(temp != NULL){
@@ -1116,16 +1116,23 @@ void addcause(struct cause ** head_ref,char *in_time_stamp, char* in_message_typ
     //     }
     // }
     struct cause* new_node7 = (struct cause *) malloc(sizeof(struct cause));
-    strncpy(new_node7 -> new_timestamp, in_time_stamp, 100);
+    strncpy(new_node7 -> new_timestamp, in_time_stamp, 50);
     //new_node7 -> new_timestamp = in_time_stamp;
     zlog_debug("the passed time stamp to addcause function is %s",in_time_stamp);
-    new_node7 -> message_type = in_message_type;
+    //new_node7 -> message_type = in_message_type;
+    strncpy(new_node7 -> message_type, in_message_type, 50);
+
     new_node7 -> event_id = in_event_id;
     new_node7 -> router_id = in_router_id;
     
-    strncpy(new_node7 -> prefix_str, in_prefix_str, 100);
+    strncpy(new_node7 -> prefix_str, in_prefix_str, 50);
     new_node7 -> as_path = in_as_path;
-    new_node7 -> received_timestamp = in_received_timestamp;
+    //new_node7 -> received_timestamp = in_received_timestamp;
+    zlog_debug("the passed received time stamp to addcause function is %s",in_received_timestamp);
+    //new_node7 -> received_timestamp = in_received_timestamp;
+    strncpy(new_node7 -> received_timestamp, in_received_timestamp, 50);
+    zlog_debug("the passed received time stamp saved to addcause function is %s",new_node7 -> received_timestamp);
+
     new_node7 -> neighbour = in_neighbour;
 
 
@@ -1138,10 +1145,12 @@ struct cause* getcause(struct cause** head_ref, char *in_timestamp){
     struct cause* temp = (*head_ref);
     struct cause* result = NULL;
     while(temp != NULL){
-        if(temp -> new_timestamp == in_timestamp){
+        zlog_debug("we are goign to compare %s and %s ",temp -> new_timestamp,in_timestamp);
+        if(strcmp(temp -> new_timestamp ,in_timestamp)==0){
             result = temp;
             break;
         }else{
+          zlog_debug("not equal lets move");
             temp = temp-> next;
         }
 
@@ -1174,13 +1183,13 @@ void add_to_sent(struct sent** head_ref, char *in_time_stamp, struct peer* in_ne
     struct sent * new_node6 = (struct sent*) malloc(sizeof(struct sent));
     
     zlog_debug("the passed time stamp to add_to_sent function is %s", in_time_stamp);
-    strncpy(new_node6 -> timestamp ,in_time_stamp, 100);
+    strncpy(new_node6 -> timestamp ,in_time_stamp, 50);
     //new_node6 -> timestamp = in_time_stamp;
     zlog_debug("the saved time stamp in add_to_sent function is %s", new_node6 -> timestamp);
 
     new_node6 -> neighbour = in_neighbour;
     new_node6 -> router_id = in_router_id;
-    strncpy(new_node6 -> prefix, in_prefix, 100);
+    strncpy(new_node6 -> prefix, in_prefix, 50);
     zlog_debug("the passed prefix to add_to_sent function is %s", in_prefix);
     zlog_debug("the saved prefix in add_to_sent function is %s", new_node6 -> prefix);
     
@@ -1192,11 +1201,11 @@ void add_to_sent(struct sent** head_ref, char *in_time_stamp, struct peer* in_ne
 void delete_from_sent(struct sent** head_ref,char *in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix ){
     struct sent * temp = (*head_ref);
     struct sent * prev = (struct sent *) malloc(sizeof(struct sent));//temp -> neighbour -> local_id.s_addr == in_neighbour -> local_id.s_addr
-    zlog_debug("we are goign to delete an entry from sent using %ld",in_router_id);
+    zlog_debug("we are goign to delete an entry from sent using %d",in_router_id);
     while(temp != NULL )
       {
-        zlog_debug("we are goign to compare %s and %s ",temp-> router_id,in_router_id);
-      if ((temp -> router_id == in_router_id))//&&strcmp(temp-> prefix ,in_time_stamp)==0 && strcmp(temp -> prefix ,in_prefix)==0
+        zlog_debug("we are goign to compare %ld and %ld ",temp-> neighbour->local_as,in_neighbour->local_as);
+      if (temp-> neighbour->local_as==in_neighbour->local_as)//&&strcmp(temp-> prefix ,in_time_stamp)==0 && strcmp(temp -> prefix ,in_prefix)==0
       {
         zlog_debug("We found the record, lets delete it");
         *head_ref = temp->next;   // Changed head
@@ -1254,9 +1263,9 @@ void print_sent(struct sent ** head_ref){
     {
         zlog_debug("Going to print node %d of the sent list");
         zlog_debug("this is the time_stamp %s", temp -> timestamp);
-        zlog_debug("this is the router_id %ld", temp -> router_id);
+        zlog_debug("this is the router_id %d", temp -> router_id);
         zlog_debug("this is the prefix %s", temp -> prefix);
-        zlog_debug("this is the neighbour local_as %ld", temp -> neighbour -> local_as);
+        zlog_debug("this is the neighbour local_as %d", temp -> neighbour -> local_as);
         count = count + 1;
         temp = temp -> next;
     }
@@ -1266,7 +1275,7 @@ void print_sent(struct sent ** head_ref){
 void add_to_received_prefix(struct received_prefix** head_ref,char *in_prefix, char *in_time_stamp, struct peer* in_peer, u_int32_t in_event_id ){
     struct received_prefix * new_node5 = (struct received_prefix *) malloc(sizeof(struct received_prefix));
     
-    strncpy(new_node5 -> prefix_received, in_prefix, 100);
+    strncpy(new_node5 -> prefix_received, in_prefix, 50);
     //new_node5 -> prefix_received= in_prefix;
     new_node5 -> time_stamp = in_time_stamp;
     //strncpy(new_node5 -> time_stamp, in_time_stamp, 100);
@@ -1352,7 +1361,7 @@ void print_peer_list(struct peer_list ** head_ref){
 
 void add_to_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref, char *in_prefix, struct peer_list* in_peer_list){
     struct neighbours_of_a_prefix * new_node3 = (struct neighbours_of_a_prefix *) malloc(sizeof(struct neighbours_of_a_prefix));
-    strncpy(new_node3 -> key_prefix, in_prefix, 100);
+    strncpy(new_node3 -> key_prefix, in_prefix, 50);
     //new_node3 -> key_prefix= in_prefix;
     new_node3 -> peer_list = in_peer_list;
 
@@ -1391,7 +1400,7 @@ void print_neighbours_of_a_prefix(struct neighbours_of_a_prefix ** head_ref){
 void add_to_prefix_neighbour_pair(struct prefix_neighbour_pair ** head_ref, char *in_prefix, struct peer * in_peer){
     struct prefix_neighbour_pair * new_node2 = (struct prefix_neighbour_pair *)malloc(sizeof(struct prefix_neighbour_pair));
      
-     strncpy(new_node2 -> my_prefix, in_prefix, 100);
+     strncpy(new_node2 -> my_prefix, in_prefix, 50);
      new_node2 -> val_peer = in_peer;
     new_node2 -> next = (*head_ref);
     (*head_ref) = new_node2;
