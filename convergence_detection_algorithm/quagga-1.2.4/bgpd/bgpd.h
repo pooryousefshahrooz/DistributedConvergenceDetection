@@ -360,52 +360,53 @@ typedef enum
 
 
 struct converged{
-    long event_id;
+    uint32_t event_id;
     bool converged_yet;
     struct converged* next;
 };
-extern void insert_in_converged(struct converged ** head_ref, long in_event_id);
-extern void set_converged_yet_true(struct converged ** head_ref, long in_event_id);
-extern int get_converged_yet_value(struct converged ** head_ref, long in_event_id); // return 1 if true 0 if false and -1 if event_id not found
+extern void insert_in_converged(struct converged ** head_ref, uint32_t in_event_id);
+extern void set_converged_yet_true(struct converged ** head_ref, uint32_t in_event_id);
+extern int get_converged_yet_value(struct converged ** head_ref, uint32_t in_event_id); // return 1 if true 0 if false and -1 if event_id not found
 extern void print_converged(struct converged ** head_ref);
 
 struct Node {
-    long event_id;
+    uint32_t event_id;
     struct peer* peer_list;
     struct Node* next;
     struct Node* prev;
 };
 
-extern void insert(struct Node** head_ref,long  in_event_id, struct peer* peer_list);
+extern void insert(struct Node** head_ref,uint32_t  in_event_id, struct peer* peer_list);
 extern void printList(struct Node* node);
-extern void delete_node(struct Node** head_ref, long in_event_id);
-extern struct Node* getNode(struct Node** head_ref, long in_event_id);
+extern void delete_node(struct Node** head_ref, uint32_t in_event_id);
+extern struct Node* getNode(struct Node** head_ref, uint32_t in_event_id);
 /* BGP neighbor structure. */
 
 struct cause{
-    time_t new_timestamp;
+    char * new_timestamp;
     char* message_type;
-    long event_id;
-    long router_id;
-    char * prefix_str;
+    uint32_t event_id;
+    uint32_t router_id;
+    char * prefix_str[100];
     char * as_path;
-    time_t received_timestamp;
+    char received_timestamp;
     struct peer* neighbour;
 
     struct cause* next;
 };
-extern void addcause(struct cause ** head_ref,time_t in_time_stamp, char* in_message_type, long in_event_id,long in_router_id, char* in_prefix_str, char* in_as_path, time_t in_received_timestamp, struct peer* in_neighbour );
-extern struct cause* getcause(struct cause** head_ref, time_t in_timestamp);
+extern void addcause(struct cause ** head_ref,char in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char in_received_timestamp, struct peer* in_neighbour );
+extern struct cause* getcause(struct cause** head_ref, char in_timestamp);
 extern void print_cause(struct cause** head_ref);
 struct sent{
-    time_t timestamp;
+    char timestamp;
     struct peer* neighbour;
-    long router_id;
-    char * prefix;
+    uint32_t router_id;
+    char * prefix[100];
     struct sent * next;
 };
-extern void add_to_sent(struct sent** head_ref, time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix);
-extern void delete_from_sent(struct sent** head_ref,time_t in_time_stamp, struct peer* in_neighbour, long in_router_id, char * in_prefix );
+extern void add_to_sent(struct sent** head_ref, char in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix);
+extern void delete_from_sent(struct sent** head_ref,char in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix );
+extern bool check_if_sent_is_empty(struct sent** head_ref,uint32_t in_router_id, char * in_prefix );
 extern void print_sent(struct sent ** head_ref);
 
 
@@ -448,7 +449,7 @@ extern void print_sent(struct sent ** head_ref);
 
 //this is the received_prefix data structure, and it has the following variables. I declare the data structure as part of the peer struct down.
 struct received_prefix{
-    char * prefix_received;
+    char * prefix_received[100];
     char * time_stamp;
     struct peer* peer_received_from;
     u_int32_t event_id;
@@ -470,7 +471,7 @@ extern void print_peer_list(struct peer_list ** head_ref);
 
 
 struct neighbours_of_a_prefix{
-    char * key_prefix;
+    char * key_prefix[100];
     struct peer_list* peer_list;
 
     struct neighbours_of_a_prefix * next;

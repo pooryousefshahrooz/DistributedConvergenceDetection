@@ -792,13 +792,13 @@ bgp_start (struct peer *peer)
 		    peer->fd);
 	  return -1;
 	}
-      zlog_debug ("we are before BGP_READ_ON in bgp_start");
+      //zlog_debug ("we are before BGP_READ_ON in bgp_start");
 
       BGP_READ_ON (peer->t_read, bgp_read, peer->fd);
-      zlog_debug ("we are after  BGP_READ_ON in bgp_start and before BGP_WRITE_ON");
+      //zlog_debug ("we are after  BGP_READ_ON in bgp_start and before BGP_WRITE_ON");
 
       BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
-      zlog_debug ("we are after  BGP_WRITE_ON in bgp_start");
+      //zlog_debug ("we are after  BGP_WRITE_ON in bgp_start");
 
       break;
     }

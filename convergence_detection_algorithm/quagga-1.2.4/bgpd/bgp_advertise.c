@@ -39,14 +39,14 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include <stdio.h>
 #include <string.h>
 
-extern struct peer *sent_peers;
-extern struct peer *to_be_sent_peers;
-extern struct peer *waiting_peers;
-extern uint32_t rec_time_stamp;
-extern uint32_t rec_root_cause_event_id;
-extern uint32_t rec_root_cause_event_owner_router_id;
+// extern struct peer *sent_peers;
+// extern struct peer *to_be_sent_peers;
+// extern struct peer *waiting_peers;
+// extern uint32_t rec_time_stamp;
+// extern uint32_t rec_root_cause_event_id;
+// extern uint32_t rec_root_cause_event_owner_router_id;
 
-extern uint32_t root_cause_event_owner;
+// extern uint32_t root_cause_event_owner;
 
 
 /* BGP advertise attribute is used for pack same attribute update into
