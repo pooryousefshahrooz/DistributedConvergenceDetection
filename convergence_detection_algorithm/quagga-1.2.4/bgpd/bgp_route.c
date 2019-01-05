@@ -2783,47 +2783,49 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
 
 
 
+    add_to_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN), passed_time_stamp, peer, passed_root_cause_event_id);
+
         //zlog_debug(" I am in the router func and the buf here is %s", buf);
-        char delim[]= ".";
+        // char delim[]= ".";
 
-        char *ptr = strtok(buf, delim);
-        int ip_array[4];
-        int i=0;
+        // char *ptr = strtok(buf, delim);
+        // int ip_array[4];
+        // int i=0;
 
-        while(ptr != NULL)
-        {
-            ip_array[i] =atoi(ptr);
-            i = i+1;
-            ptr = strtok(NULL, delim);
+        // while(ptr != NULL)
+        // {
+        //     ip_array[i] =atoi(ptr);
+        //     i = i+1;
+        //     ptr = strtok(NULL, delim);
 
-        }
+        // }
 
-        // zlog_debug("%d \n", ip_array[0]);
-        // zlog_debug("%d \n", ip_array[1]);
-        // zlog_debug("%d \n", ip_array[2]);
-        // zlog_debug("%d \n", ip_array[3]);
+        // // zlog_debug("%d \n", ip_array[0]);
+        // // zlog_debug("%d \n", ip_array[1]);
+        // // zlog_debug("%d \n", ip_array[2]);
+        // // zlog_debug("%d \n", ip_array[3]);
 
-        char my_received_prefix[50];
-        sprintf( my_received_prefix, "%u", ip_array[0] );
-
-
-        char my_char_received_prefix2[50];
-        sprintf( my_char_received_prefix2, "%u", ip_array[1] );
+        // char my_received_prefix[50];
+        // sprintf( my_received_prefix, "%u", ip_array[0] );
 
 
-        char my_char_received_prefix3[50];
-        sprintf( my_char_received_prefix3, "%u", ip_array[2] );
+        // char my_char_received_prefix2[50];
+        // sprintf( my_char_received_prefix2, "%u", ip_array[1] );
 
 
-          char my_char_received_prefix4[50];
-        sprintf( my_char_received_prefix4, "%u", ip_array[3] );
+        // char my_char_received_prefix3[50];
+        // sprintf( my_char_received_prefix3, "%u", ip_array[2] );
 
-        strcat(my_received_prefix, ".");
-        strcat(my_received_prefix, my_char_received_prefix2);
-        strcat(my_received_prefix, ".");
-        strcat(my_received_prefix, my_char_received_prefix3);
-        strcat(my_received_prefix, ".");
-        strcat(my_received_prefix, my_char_received_prefix4);
+
+        //   char my_char_received_prefix4[50];
+        // sprintf( my_char_received_prefix4, "%u", ip_array[3] );
+
+        // strcat(my_received_prefix, ".");
+        // strcat(my_received_prefix, my_char_received_prefix2);
+        // strcat(my_received_prefix, ".");
+        // strcat(my_received_prefix, my_char_received_prefix3);
+        // strcat(my_received_prefix, ".");
+        // strcat(my_received_prefix, my_char_received_prefix4);
 
         // zlog_debug ("%s 44.....this is the received_prefix", my_received_prefix);
 
@@ -2849,6 +2851,12 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
     
 
     // char my_prefix2[] = "180.180.0.0";
+    // //char ts[] = passed_time_stamp;
+
+    // // char my_time_stamp;
+    // // strncpy(my_time_stamp, passed_time_stamp, 100);
+
+
     // if (my_prefix2 == inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN))
     // zlog_debug (" this %s and  this %s are same ",my_prefix2,inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN) );
     // else
@@ -2864,29 +2872,33 @@ bgp_update_main (struct peer *peer, struct prefix *p, struct attr *attr,
     // char char_type_of_time_stamp ;
     // char_type_of_time_stamp = passed_time_stamp;
 
-    zlog_debug("We are going to save the received packets' time stamp which is %s",passed_time_stamp);
 
 
-    add_to_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), "180.180.0.0", passed_time_stamp, peer, passed_root_cause_event_id);
+    // char ts[] = passed_time_stamp;
 
+    // zlog_debug("We are going to save the received packets' time stamp which is %s and the array one is %s",passed_time_stamp , ts);
 
-    struct received_prefix * res_rec_pref7 = (struct received_prefix *) malloc(sizeof(struct received_prefix));
-
-    res_rec_pref7 = get_from_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), "180.180.0.0", peer );
-    zlog_debug("the extracted peers' time stamp is  %s ",res_rec_pref7 -> time_stamp);
-    zlog_debug("We extracted this for prefix %s ",inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN));
-    zlog_debug("We extracted this with time stamp %s ",res_rec_pref7 -> time_stamp);
-    zlog_debug("We extracted this with E_id %d ",res_rec_pref7 -> event_id);
+   // add_to_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), "180.180.0.0", passed_time_stamp, peer, passed_root_cause_event_id);
 
 
 
-    struct received_prefix * res_rec_pref9 = (struct received_prefix *) malloc(sizeof(struct received_prefix));
+    // struct received_prefix * res_rec_pref7 = (struct received_prefix *) malloc(sizeof(struct received_prefix));
 
-    res_rec_pref9 = get_from_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), "19.19.0.0", peer );
-    zlog_debug("2. the extracted peers' time stamp is  %s ",res_rec_pref9 -> time_stamp);
-    zlog_debug("2. We extracted this for prefix %s ",res_rec_pref9->prefix_received);
-    zlog_debug("2. We extracted this with time stamp %s ",res_rec_pref9 -> time_stamp);
-    zlog_debug("2. We extracted this with E_id %d ",res_rec_pref9 -> event_id);
+    // res_rec_pref7 = get_from_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), "180.180.0.0", peer );
+    // zlog_debug("the extracted peers' time stamp is  %s ",res_rec_pref7 -> time_stamp);
+    // zlog_debug("We extracted this for prefix %s ",inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN));
+    // zlog_debug("We extracted this with time stamp %s ",res_rec_pref7 -> time_stamp);
+    // zlog_debug("We extracted this with E_id %d ",res_rec_pref7 -> event_id);
+
+
+
+    // struct received_prefix * res_rec_pref9 = (struct received_prefix *) malloc(sizeof(struct received_prefix));
+
+    // res_rec_pref9 = get_from_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), "19.19.0.0", peer );
+    // zlog_debug("2. the extracted peers' time stamp is  %s ",res_rec_pref9 -> time_stamp);
+    // zlog_debug("2. We extracted this for prefix %s ",res_rec_pref9->prefix_received);
+    // zlog_debug("2. We extracted this with time stamp %s ",res_rec_pref9 -> time_stamp);
+    // zlog_debug("2. We extracted this with E_id %d ",res_rec_pref9 -> event_id);
 
 
 

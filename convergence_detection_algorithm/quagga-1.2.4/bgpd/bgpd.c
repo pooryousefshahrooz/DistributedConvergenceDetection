@@ -1104,7 +1104,7 @@ void printList(struct Node* node)
 //}
 /* they end herer */
 
-void addcause(struct cause ** head_ref,char in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char in_received_timestamp, struct peer* in_neighbour ){
+void addcause(struct cause ** head_ref,char *in_time_stamp, char* in_message_type, uint32_t in_event_id,uint32_t in_router_id, char* in_prefix_str, char* in_as_path, char in_received_timestamp, struct peer* in_neighbour ){
     struct converged* temp = (*head_ref);
 
     // while(temp != NULL){
@@ -1116,7 +1116,9 @@ void addcause(struct cause ** head_ref,char in_time_stamp, char* in_message_type
     //     }
     // }
     struct cause* new_node7 = (struct cause *) malloc(sizeof(struct cause));
-    new_node7 -> new_timestamp = in_time_stamp;
+    strncpy(new_node7 -> new_timestamp, in_time_stamp, 100);
+    //new_node7 -> new_timestamp = in_time_stamp;
+    zlog_debug("the passed time stamp to addcause function is %s",in_time_stamp);
     new_node7 -> message_type = in_message_type;
     new_node7 -> event_id = in_event_id;
     new_node7 -> router_id = in_router_id;
@@ -1132,7 +1134,7 @@ void addcause(struct cause ** head_ref,char in_time_stamp, char* in_message_type
 
 }
 
-struct cause* getcause(struct cause** head_ref, char in_timestamp){
+struct cause* getcause(struct cause** head_ref, char *in_timestamp){
     struct cause* temp = (*head_ref);
     struct cause* result = NULL;
     while(temp != NULL){
@@ -1168,38 +1170,35 @@ void print_cause(struct cause** head_ref){
     return;
 }
 
-void add_to_sent(struct sent** head_ref, char in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix){
+void add_to_sent(struct sent** head_ref, char *in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix){
     struct sent * new_node6 = (struct sent*) malloc(sizeof(struct sent));
-    new_node6 -> timestamp = in_time_stamp;
+    
+    zlog_debug("the passed time stamp to add_to_sent function is %s", in_time_stamp);
+    strncpy(new_node6 -> timestamp ,in_time_stamp, 100);
+    //new_node6 -> timestamp = in_time_stamp;
+    zlog_debug("the saved time stamp in add_to_sent function is %s", new_node6 -> timestamp);
+
     new_node6 -> neighbour = in_neighbour;
     new_node6 -> router_id = in_router_id;
     strncpy(new_node6 -> prefix, in_prefix, 100);
+    zlog_debug("the passed prefix to add_to_sent function is %s", in_prefix);
+    zlog_debug("the saved prefix in add_to_sent function is %s", new_node6 -> prefix);
     
 
 
     new_node6->next = (*head_ref);
     (*head_ref) = new_node6;
 }
-void delete_from_sent(struct sent** head_ref,char in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix ){
+void delete_from_sent(struct sent** head_ref,char *in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix ){
     struct sent * temp = (*head_ref);
     struct sent * prev = (struct sent *) malloc(sizeof(struct sent));//temp -> neighbour -> local_id.s_addr == in_neighbour -> local_id.s_addr
-    int success = 0;
-    // if(temp!=NULL && ){
-    //     *head_ref = temp->next;   // Changed head
-    //     free(temp);               // free old head
-    //     zlog_debug("successfully deleted the event from sent");
-    //     return;
-    // }
-    // if(temp == NULL)
-    // {
-    //     zlog_debug("Could not delete event from sent b/c entry does not exist");
-    //     return;
-    // }
+    zlog_debug("we are goign to delete an entry from sent using %ld",in_router_id);
     while(temp != NULL )
       {
-      if ((temp-> timestamp == in_time_stamp) &&  temp -> router_id == in_router_id && (strcmp(temp -> prefix ,in_prefix)==0))
+        zlog_debug("we are goign to compare %s and %s ",temp-> router_id,in_router_id);
+      if ((temp -> router_id == in_router_id))//&&strcmp(temp-> prefix ,in_time_stamp)==0 && strcmp(temp -> prefix ,in_prefix)==0
       {
-
+        zlog_debug("We found the record, lets delete it");
         *head_ref = temp->next;   // Changed head
         free(temp);               // free old head
         zlog_debug("successfully deleted the event from sent");
@@ -1207,9 +1206,11 @@ void delete_from_sent(struct sent** head_ref,char in_time_stamp, struct peer* in
       }
       else
      {
+      zlog_debug("not equal, lets move!");
         prev = temp;
         temp = temp -> next;
       }
+    }
 
       zlog_debug("Could not delete event from sent b/c entry does not exist or the list is empty");
       return;
@@ -1220,10 +1221,6 @@ void delete_from_sent(struct sent** head_ref,char in_time_stamp, struct peer* in
     // prev -> next = temp -> next;
     // free(temp);
 
-
-
-
-}
 
 bool check_if_sent_is_empty(struct sent** head_ref,uint32_t in_router_id, char * in_prefix ){
     struct sent * temp = (*head_ref);
@@ -1238,7 +1235,7 @@ bool check_if_sent_is_empty(struct sent** head_ref,uint32_t in_router_id, char *
         temp = temp -> next;
     }
     if(temp == NULL){
-        zlog_debug("Could not delete event from sent b/c entry does not exist");
+        //zlog_debug("sent is empty");
         return true;
     }
     else
@@ -1256,7 +1253,7 @@ void print_sent(struct sent ** head_ref){
     while(temp != NULL)
     {
         zlog_debug("Going to print node %d of the sent list");
-        zlog_debug("this is the time_stamp %ld", temp -> timestamp);
+        zlog_debug("this is the time_stamp %s", temp -> timestamp);
         zlog_debug("this is the router_id %ld", temp -> router_id);
         zlog_debug("this is the prefix %s", temp -> prefix);
         zlog_debug("this is the neighbour local_as %ld", temp -> neighbour -> local_as);
