@@ -43,8 +43,8 @@ extern int bgp_read (struct thread *);
 extern int bgp_write (struct thread *);
 
 extern void bgp_keepalive_send (struct peer *);
-extern void bgp_fizzle_send (struct peer *, uint32_t * , char *,uint32_t *,char *);
-extern void bgp_convergence_send (struct peer *, uint32_t * , char *, char *);
+extern void bgp_fizzle_send (struct peer *, uint32_t * , char *,uint32_t *,char *,uint32_t *);
+extern void bgp_convergence_send (struct peer *, uint32_t * ,  char *);
 extern void bgp_open_send (struct peer *);
 extern void bgp_notify_send (struct peer *, u_int8_t, u_int8_t);
 extern void bgp_notify_send_with_data (struct peer *, u_int8_t, u_int8_t, 
@@ -57,6 +57,6 @@ extern void bgp_default_withdraw_send (struct peer *, afi_t, safi_t);
 
 extern int bgp_capability_receive (struct peer *, bgp_size_t);
 
-extern int bgp_nlri_parse (struct peer *, struct attr *, struct bgp_nlri *,uint32_t *,char *);
+extern int bgp_nlri_parse (struct peer *, struct attr *, struct bgp_nlri *,uint32_t *,char *,uint32_t *);
 
 #endif /* _QUAGGA_BGP_PACKET_H */

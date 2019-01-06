@@ -174,20 +174,28 @@ bgp_connect_check (struct peer *peer)
 
 
 
-
-
 /* Make BGP_MSG_CONVERGENCE packet and send it to the peer. */
 
 void
-bgp_convergence_send (struct peer *peer,uint32_t *passed_root_cause_event_id,char  *passed_time_stamp, char *prefix)
+bgp_convergence_send (struct peer *peer,uint32_t *passed_root_cause_event_id,char *prefix)
 {
+  //zlog_debug ("We are going to make a BGP_MSG_CONVERGENCE message to send to %s",peer->host);
+  zlog_debug ("We are going to send a BGP_MSG_CONVERGENCE message to  %s and he parameters are E_id is %ld , and prefix %s ",peer->host,passed_root_cause_event_id,prefix);
+  //zlog_debug(" lets convert prefix (%s)to four numbers to send %s", prefix);
+  char my_delim[]= ".";
+  char *my_ptr = strtok(prefix, my_delim);
+  int my_ip_array[4];
+  int i=0;
 
-  zlog_debug ("We are going to make a BGP_MSG_CONVERGENCE message to send to %s",peer->host);
+  while(my_ptr != NULL)
+  {
+      my_ip_array[i] =atoi(my_ptr);
+      i = i+1;
+      my_ptr = strtok(NULL, my_delim);
+  }
 
-
-    afi_t afi;
+  afi_t afi;
   safi_t safi;
-
 
   struct stream *s;
   struct stream *snlri;
@@ -202,7 +210,6 @@ bgp_convergence_send (struct peer *peer,uint32_t *passed_root_cause_event_id,cha
   int space_needed = 0;
   size_t mpattrlen_pos = 0;
   size_t mpattr_pos = 0;
-
   s = peer->work;
   stream_reset (s);
   snlri = peer->scratch;
@@ -219,102 +226,178 @@ bgp_convergence_send (struct peer *peer,uint32_t *passed_root_cause_event_id,cha
   s = stream_new (BGP_MAX_PACKET_SIZE);
   bgp_packet_set_marker (s, BGP_MSG_CONVERGENCE);
 
-    //  int length;
-    // length = strlen("shahroozshahrooz");
+ stream_putl (s, passed_root_cause_event_id);
 
-    // char result[50]; 
-    // sprintf(result, "%u", length); 
-
-    //   zlog_debug ("%s this is shahrooz's lenghth", result);
-
-    /* 2: Write timestamp */
-   stream_putl (s, (int)passed_time_stamp);
-
-    /* 2: Write root cause event ID */
-   stream_putl (s, passed_root_cause_event_id);
-
-
-    /* 2: withdrawn routes length */
-    stream_putw (s, 0);
-
-
-    /* 3: total attributes length - attrlen_pos stores the position */
-    attrlen_pos = stream_get_endp (s);
-
-    stream_putw (s, 0);
-
-
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    stream_putl (s, 1);
-    /* 4: if there is MP_REACH_NLRI attribute, that should be the first
-     * attribute, according to draft-ietf-idr-error-handling. Save the
-     * position.
-     */
-    mpattr_pos = stream_get_endp(s);
-    //zlog_debug ("%s We are after  the while (adv)", ".....---------..................");
-
-
-     int length;
+ stream_putl (s, my_ip_array[0]);
+ stream_putl (s, my_ip_array[1]);
+ stream_putl (s, my_ip_array[2]);
+ stream_putl (s, my_ip_array[3]);
  
+  /* 2: withdrawn routes length */
+  stream_putw (s, 0);
+
+
+  /* 3: total attributes length - attrlen_pos stores the position */
+  attrlen_pos = stream_get_endp (s);
+
+  stream_putw (s, 0);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+  stream_putl (s, 1);
+
+  mpattr_pos = stream_get_endp(s);
+  //zlog_debug ("%s We are after  the while (adv)", ".....---------..................");
+   int length;
+  length = strlen("shahroozshahrooz");
+
+  total_attr_len = 32;
+  packet = stream_dup (s);
+  bgp_packet_set_size (packet);
+  bgp_packet_add (peer, packet);
+  BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
+  stream_reset (s);
+  stream_reset (snlri);
+  //zlog_debug ("%s We are at the returning packet point for sending convergence message", ".....---------..................");
   
- 
-    length = strlen("shahroozshahrooz");
-
-
-    total_attr_len = 32;
-      /* set the total attribute length correctly */
-    //stream_putw_at (s, attrlen_pos, total_attr_len);
-
-
-  /////
-    packet = stream_dup (s);
-    bgp_packet_set_size (packet);
-    bgp_packet_add (peer, packet);
-    BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
-    stream_reset (s);
-    stream_reset (snlri);
-    //zlog_debug ("%s We are at the returning packet point for sending FIZZLE", ".....---------..................");
- 
-    return packet;
-  
-    
-
+  return packet;
 
 
   return NULL;
 
 
-}
 
+
+
+
+
+
+
+
+  //   afi_t afi;
+  // safi_t safi;
+
+
+  // struct stream *s;
+  // struct stream *snlri;
+  // struct bgp_adj_out *adj;
+  // struct bgp_advertise *adv;
+  // struct stream *packet;
+  // struct bgp_node *rn = NULL;
+  // struct bgp_info *binfo = NULL;
+  // bgp_size_t total_attr_len = 0;
+  // unsigned long attrlen_pos = 0;
+  // int space_remaining = 0;
+  // int space_needed = 0;
+  // size_t mpattrlen_pos = 0;
+  // size_t mpattr_pos = 0;
+
+  // s = peer->work;
+  // stream_reset (s);
+  // snlri = peer->scratch;
+  // stream_reset (snlri);
+
+  //     /* 1: Write the BGP message header - 16 bytes marker, 2 bytes length,
+  //    * one byte message type.
+  //    */
+  // adv = BGP_ADV_FIFO_HEAD (&peer->sync[afi][safi]->update);
+
+
+  // //zlog_debug ("%s We are before the while (adv)", ".......................");
+
+  // s = stream_new (BGP_MAX_PACKET_SIZE);
+  // bgp_packet_set_marker (s, BGP_MSG_CONVERGENCE);
+
+  //   //  int length;
+  //   // length = strlen("shahroozshahrooz");
+
+  //   // char result[50]; 
+  //   // sprintf(result, "%u", length); 
+
+  //   //   zlog_debug ("%s this is shahrooz's lenghth", result);
+
+  //   /* 2: Write timestamp */
+  //  //stream_putl (s, passed_time_stamp);
+
+  //   /* 2: Write root cause event ID */
+  //    stream_putl (s, passed_root_cause_event_id);
+
+  //     char my_delim[]= ".";
+
+  //     char *my_ptr = strtok(prefix, my_delim);
+  //     int my_ip_array[4];
+  //     int i=0;
+
+  //     while(my_ptr != NULL)
+  //     {
+  //         my_ip_array[i] =atoi(my_ptr);
+  //         i = i+1;
+  //         my_ptr = strtok(NULL, my_delim);
+  //     }
+
+  //     // zlog_debug("%d ", my_ip_array[0]);
+  //     // zlog_debug("%d ", my_ip_array[1]);
+  //     // zlog_debug("%d ", my_ip_array[2]);
+  //     // zlog_debug("%d ", my_ip_array[3]);
+
+  //    stream_putl (s, my_ip_array[0]);
+
+  //   stream_putl (s, my_ip_array[1]);
+  //   stream_putl (s, my_ip_array[2]);
+  //   stream_putl (s, my_ip_array[3]);
+
+  //   //stream_putl (s, passed_router_id);
+
+  //   /* 2: withdrawn routes length */
+  //   stream_putw (s, 0);
+
+  //   /* 3: total attributes length - attrlen_pos stores the position */
+  //   attrlen_pos = stream_get_endp (s);
+
+  //   stream_putw (s, 0);
+  //   mpattr_pos = stream_get_endp(s);
+  //   packet = stream_dup (s);
+  //   bgp_packet_set_size (packet);
+  //   bgp_packet_add (peer, packet);
+  //   BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
+  //   stream_reset (s);
+  //   stream_reset (snlri);
+  //   //zlog_debug ("%s We are at the returning packet point for sending FIZZLE", ".....---------..................");
+
+  //   return packet;
+  // return NULL;
+
+
+}
 
 /* Make BGP_MSG_FIZZLE packet and send it to the peer. */
 
 void
-bgp_fizzle_send (struct peer *peer,uint32_t *passed_root_cause_event_id,char *passed_time_stamp,uint32_t *passed_root_cause_event_owner_router_id,char *passed_prefix)
+bgp_fizzle_send (struct peer *peer,uint32_t *passed_root_cause_event_id,char *passed_time_stamp,uint32_t *passed_root_cause_event_owner_router_id,char *passed_prefix, uint32_t *E_owner_id)
 {
 
-  zlog_debug ("We are going to make a BGP_MSG_FIZZLE message to send to %s",peer->host);
+ 
 
 
-  zlog_debug ("The parameters are time_stamp is %s, E_id is %ld , and router_owner is %ld ",passed_time_stamp,passed_root_cause_event_id,passed_root_cause_event_owner_router_id);
-zlog_debug ("We need to convert time stamp to int and send in putl in stream");
+
+
+zlog_debug ("We are going to send a BGP_MSG_FIZZLE message to %s and the parameters are time_stamp is %s,E_id is %ld , and router_owner is %ld ",peer->host,passed_time_stamp,passed_root_cause_event_id,E_owner_id);
+//zlog_debug ("We need to convert time stamp to int and send in putl in stream");
 uint32_t my_converted_time_stamp ;
 my_converted_time_stamp = (int)passed_time_stamp;
 
 int my_converted_time_stamp2 = (int)strtol(passed_time_stamp, (char **)NULL, 10); // strtol = STRing TO Long
 
 zlog_debug ("We converted");
-zlog_debug ("We converted and the value of my_converted_time_stamp  is %u",my_converted_time_stamp);
-zlog_debug ("We converted and the value  of my_converted_time_stamp2 is %ld",my_converted_time_stamp2);
-zlog_debug ("We converted and the value of my_converted_time_stamp2 is %ld",my_converted_time_stamp2);
+// zlog_debug ("We converted and the value of my_converted_time_stamp  is %u",my_converted_time_stamp);
+// zlog_debug ("We converted and the value  of my_converted_time_stamp2 is %ld",my_converted_time_stamp2);
+// zlog_debug ("We converted and the value of my_converted_time_stamp2 is %ld",my_converted_time_stamp2);
 
-zlog_debug ("We converted and the value of my_converted_time_stamp2 is %d",my_converted_time_stamp2);
+// zlog_debug ("We converted and the value of my_converted_time_stamp2 is %d",my_converted_time_stamp2);
 
 
 
@@ -327,7 +410,7 @@ zlog_debug ("We converted and the value of my_converted_time_stamp2 is %d",my_co
 //       inet_ntop(p->family, &p->u.prefix, buf, SU_ADDRSTRLEN),
 //       p->prefixlen);
 
-    zlog_debug(" lets convert prefix (%s)to four numbers to send %s", passed_prefix);
+    //zlog_debug(" lets convert prefix (%s)to four numbers to send %s", passed_prefix);
     char my_delim[]= ".";
 
     char *my_ptr = strtok(passed_prefix, my_delim);
@@ -341,10 +424,10 @@ zlog_debug ("We converted and the value of my_converted_time_stamp2 is %d",my_co
         my_ptr = strtok(NULL, my_delim);
     }
 
-    zlog_debug("%d ", my_ip_array[0]);
-    zlog_debug("%d ", my_ip_array[1]);
-    zlog_debug("%d ", my_ip_array[2]);
-    zlog_debug("%d ", my_ip_array[3]);
+    // zlog_debug("%d ", my_ip_array[0]);
+    // zlog_debug("%d ", my_ip_array[1]);
+    // zlog_debug("%d ", my_ip_array[2]);
+    // zlog_debug("%d ", my_ip_array[3]);
 
 
 
@@ -405,7 +488,7 @@ zlog_debug ("We converted and the value of my_converted_time_stamp2 is %d",my_co
    stream_putl (s, passed_root_cause_event_id);
 
    
-   stream_putl (s, passed_root_cause_event_owner_router_id);
+   stream_putl (s, E_owner_id);
 
    stream_putl (s, my_ip_array[0]);
 
@@ -458,7 +541,7 @@ zlog_debug ("We converted and the value of my_converted_time_stamp2 is %d",my_co
     BGP_WRITE_ON (peer->t_write, bgp_write, peer->fd);
     stream_reset (s);
     stream_reset (snlri);
-    zlog_debug ("%s We are at the returning packet point for sending FIZZLE", ".....---------..................");
+    //zlog_debug ("%s We are at the returning packet point for sending FIZZLE", ".....---------..................");
     
     return packet;
   
@@ -598,8 +681,19 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
 
-    zlog_debug ("!!!!!!!!!!!!!!!!!!!!!!!!******!!!!! this is %s prefix value in while adv", "180.180.0.0");
+    //zlog_debug ("!!!!!!!!!!!!!!!!!!!!!!!!******!!!!! this is %s prefix value in while adv", );
 
+
+
+      struct peer_list* test_peer_list = NULL;
+      add_to_peer_list(&(test_peer_list), peer);
+     
+      zlog_debug ("+++++++++++++++++++++++++++++++++  we are going to add and print the list of neighbors we will send global convergence of (%s) to ++++++++++++++++++++","X");
+
+
+      //add_to_neighbours_of_a_prefix(&(peer -> neighbours_of_prefix), "6.6.6.6", test_peer_list);
+      add_to_neighbours_of_a_prefix(&(a_peer_for_maintating_head_of_data_structure -> neighbours_of_prefix), inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ), test_peer_list);
+       
     //zlog_debug(".............I am in a complex loop for %s..............",inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ));
 
     struct prefix_neighbour_pair * best_received_neighbor = (struct prefix_neighbour_pair *) malloc(sizeof(struct prefix_neighbour_pair));
@@ -617,27 +711,27 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
     res_rec_pref = get_from_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ), best_received_neighbor );
     // struct received_prefix * res_rec_pref8 = (struct received_prefix *) malloc(sizeof(struct received_prefix));
     // res_rec_pref8 = get_from_received_prefix(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ), best_received_neighbor );
-    zlog_debug("check: lets test the peer->host of saved  %s ",best_received_neighbor->val_peer->host);
-    zlog_debug("check: the extracted peers' time stamp is  %s ",res_rec_pref -> time_stamp);
+    //zlog_debug("check: lets test the peer->host of saved  %s ",best_received_neighbor->val_peer->host);
+    //zlog_debug("check: the extracted peers' time stamp is  %s ",res_rec_pref -> time_stamp);
 
     char *my_time_stamp[50];
     strncpy(my_time_stamp, res_rec_pref -> time_stamp, 50);
     //my_time_stamp= res_rec_pref -> time_stamp;
-    zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
+    // zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
 
-    //zlog_debug("test: the extracted peers' time stamp.time_stamp is  %s ",res_rec_pref.time_stamp);
-    zlog_debug("check: We extracted this for prefix %s ",res_rec_pref->prefix_received);
-    zlog_debug("check: We extracted this with time stamp %s ",res_rec_pref -> time_stamp);
-    zlog_debug("check: We extracted this with E_id %d ",res_rec_pref -> event_id);
+    // //zlog_debug("test: the extracted peers' time stamp.time_stamp is  %s ",res_rec_pref.time_stamp);
+    // zlog_debug("check: We extracted this for prefix %s ",res_rec_pref->prefix_received);
+    // zlog_debug("check: We extracted this with time stamp %s ",res_rec_pref -> time_stamp);
+    // zlog_debug("check: We extracted this with E_id %d ",res_rec_pref -> event_id);
 
-    zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
+    // zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
 
-    zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
+    // zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
 
 
-    int g =12;
-    g = g+2;
-    zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
+    // int g =12;
+    // g = g+2;
+    //zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
 
 
 
@@ -676,9 +770,9 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
 
-      addcause(&(a_peer_for_maintating_head_of_data_structure -> cause),char_milliseconds2,"CBGPMSG",res_rec_pref -> event_id, peer->as,inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ), "1 2 3", res_rec_pref -> time_stamp,peer);
+      addcause(&(a_peer_for_maintating_head_of_data_structure -> cause),char_milliseconds2,"CBGPMSG",res_rec_pref -> event_id, peer->as,inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ), "1 2 3", res_rec_pref -> time_stamp,res_rec_pref->peer_received_from);
 
-      add_to_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),char_milliseconds2,peer, peer->as, inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ));
+      add_to_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),char_milliseconds2,peer,res_rec_pref -> event_id , inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ));
 
 
 
@@ -696,7 +790,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
 
 
       //zlog_debug("we converted our time stamp to int");
-      zlog_debug("**************************   the cause of %s with time stamp %s sent to %s is time stamp  %s received from %s  and in_neighbor to send back is %s",inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ),char_milliseconds2,peer->host,my_time_stamp,res_rec_pref->peer_received_from->host,peer->host);
+      zlog_debug("**************************   the cause of %s with time stamp %s sent to %s is time stamp  %s received from %s  and in_neighbor to send back is %s",inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ),char_milliseconds2,peer->host,my_time_stamp,res_rec_pref->peer_received_from->host,res_rec_pref->peer_received_from->host);
       //zlog_debug("lets add a default cause value ");
       //addcause(&(a_peer_for_maintating_head_of_data_structure -> cause),"123","CBGPMSG",6765, 3434,"10.68.62.5", "1 2 3", time(NULL),peer);
       
@@ -721,9 +815,9 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
         /* 2: Write root cause event ID */
       stream_putl (s, res_rec_pref -> event_id);
 
-      root_cause_event_owner = peer->as;
+      //root_cause_event_owner = peer->as;
 
-      stream_putl (s, root_cause_event_owner);
+      stream_putl (s,res_rec_pref->received_E_owner_id );
 
       zlog_debug("check: my_time_stamp value is %s  ",my_time_stamp);
 
@@ -794,7 +888,7 @@ bgp_update_packet (struct peer *peer, afi_t afi, safi_t safi)
       char * in_received_time_stamp[50];
       strncpy(in_received_time_stamp, "GRCMSG", 50);
       //char *in_received_time_stamp[] = "GRCMSG";
-      add_to_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),char_time_stamp,peer, peer->local_as, inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ));
+      add_to_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),char_time_stamp,peer, generated_root_cause_id, inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ));
       addcause(&(a_peer_for_maintating_head_of_data_structure -> cause),char_time_stamp,in_received_time_stamp,generated_root_cause_id, peer->local_as,inet_ntop (rn->p.family, &(rn->p.u.prefix), buf, INET6_BUFSIZ), "1 2 3", in_received_time_stamp,peer);
 
       //zlog_debug("******************");
@@ -1513,14 +1607,10 @@ bgp_write_notify (struct peer *peer)
 
 /* Parse BGP CONVERGENCE packet */
 static int
-bgp_convergene_receive (struct peer *peer, bgp_size_t size)
+bgp_convergence_receive (struct peer *peer, bgp_size_t size)
 {
 
-  zlog_debug ("==========================We converged====================");
 
-
-
-  zlog_debug ("0.we have received a convergene message from %s and we are going to pars it  ", peer->host);
   int ret, nlri_ret;
   u_char *end;
   struct stream *s;
@@ -1558,42 +1648,27 @@ bgp_convergene_receive (struct peer *peer, bgp_size_t size)
 
   s = peer->ibuf;
 
-
-
       char result7[50]; 
    
     sprintf(result7, "%u", stream_pnt (s)); 
 
     //zlog_debug ("%s 1. this is the stream_pnt (s) ", result7);
-
-
-
       char result8[50]; 
-   
     sprintf(result8, "%u", size); 
-
     //zlog_debug ("%s 2. this is the size ", result8);
-
-
     end = stream_pnt (s) + size;
-
-
       char result9[50]; 
    
     sprintf(result9, "%u", end); 
 
     //zlog_debug ("%s 3.this is the end  ", result9);
 
-
-
-
   if (  size == 4 )
     {
-    zlog_debug ("we have received a convergence message but the lenght is 4 ");
+    //zlog_debug ("we have received a convergence message but the lenght is 4 ");
 
       return -1;
     }
-
 
   /* RFC1771 6.3 If the Unfeasible Routes Length or Total Attribute
      Length is too large (i.e., if Unfeasible Routes Length + Total
@@ -1602,8 +1677,6 @@ bgp_convergene_receive (struct peer *peer, bgp_size_t size)
   if (stream_pnt (s) + 2 > end)
     {
       zlog_debug ("For convergence message:[Error] Update packet error (packet length is short");
-
-
       zlog_err ("%s [Error] Update packet error"
     " (packet length is short for unfeasible length)",
     peer->host);
@@ -1612,11 +1685,7 @@ bgp_convergene_receive (struct peer *peer, bgp_size_t size)
       return -1;
     }
 
-
-
-
-
-  zlog_debug ("we have received a convergence message and we are going to get root cause event id and time");
+  //zlog_debug ("we have received a convergence message and we are going to get root cause event id and send to the received E's neighbors");
 
     int size_of_stream = s->size;
 
@@ -1625,7 +1694,6 @@ bgp_convergene_receive (struct peer *peer, bgp_size_t size)
     sprintf(char_size_of_stream, "%u", size_of_stream); 
 
     //zlog_debug ("%s this is size_of_stream", char_size_of_stream);
-
 
     int end_of_s = s->endp;
 
@@ -1638,51 +1706,72 @@ bgp_convergene_receive (struct peer *peer, bgp_size_t size)
 
   /* get root cause evnt id. */
 
-  uint32_t rec_time_stamp_from_fizzle;
-  uint32_t rec_root_cause_event_id_from_fizzle;
+  uint32_t rec_prefix_part_0;
+  uint32_t rec_prefix_part_1;
+  uint32_t rec_prefix_part_2;
+  uint32_t rec_prefix_part_3;
+  uint32_t rec_root_cause_event_id;
 
-  rec_time_stamp_from_fizzle = stream_getl (s);
+  rec_root_cause_event_id = stream_getl (s);
 
-    //zlog_debug ("we got time stamp time");
-  char char_rec_time_stamp_from_fizzle[50];
-  sprintf( char_rec_time_stamp_from_fizzle, "%u", rec_time_stamp_from_fizzle );
-  zlog_debug ("%s 3.this is the time_stamp", char_rec_time_stamp_from_fizzle);
+  zlog_debug ("We received a convergene message from %s ", peer->host);
 
-
-
-    char result18[50]; 
-   
-    sprintf(result18, "%u", stream_pnt (s)); 
-
-    zlog_debug ("%s and after reading time stamp, this is the stream_pnt (s) ", result18);
-
-    zlog_debug ("we are going to get root cause id");
-
-  rec_root_cause_event_id_from_fizzle = stream_getl (s);
+  zlog_debug ("................................********  STABLE STATE of %ld ********............................",rec_root_cause_event_id);
 
 
-// if (time_stamp == 111111)
-//     zlog_debug ("this is the timestamp");
-
-// if (root_cause_event_id == 1234567)
-//     zlog_debug ("this is the root_cause_event_id");
-
+  rec_prefix_part_0 = stream_getl (s);
+  rec_prefix_part_1 = stream_getl (s);
+  rec_prefix_part_2 = stream_getl (s);
+  rec_prefix_part_3 = stream_getl (s);
 
 
-  char str5[50];
-  sprintf( str5, "%u", rec_root_cause_event_id_from_fizzle );
+  char received_prefix[50];
+  sprintf( received_prefix, "%u", rec_prefix_part_0 );
 
 
-  // char str3[50];
-  // uint32_t my_num;
-  // my_num = 1234567;
-  // sprintf( str3, "%u",  my_num);
-
-  // zlog_debug ("%s this is the 1234567", str3);
+  char char_received_prefix2[50];
+  sprintf( char_received_prefix2, "%u", rec_prefix_part_1 );
 
 
+  char char_received_prefix3[50];
+  sprintf( char_received_prefix3, "%u", rec_prefix_part_2 );
 
-  zlog_debug ("%s 4.this is the received_root_cause_event_id", str5);
+    char char_received_prefix4[50];
+  sprintf( char_received_prefix4, "%u", rec_prefix_part_3 );
+
+  strcat(received_prefix, ".");
+  strcat(received_prefix, char_received_prefix2);
+  strcat(received_prefix, ".");
+  strcat(received_prefix, char_received_prefix3);
+  strcat(received_prefix, ".");
+  strcat(received_prefix, char_received_prefix4);
+
+  //zlog_debug ("This is %s the received prefix from bgp_convergence_receive function ", received_prefix);
+
+
+  struct neighbours_of_a_prefix * test_neighbour_of_prefix = (struct neighbours_of_a_prefix *) malloc (sizeof(struct neighbours_of_a_prefix));
+
+  test_neighbour_of_prefix = get_from_neighbours_of_a_prefix(&(a_peer_for_maintating_head_of_data_structure -> neighbours_of_prefix),received_prefix);
+    
+    if (test_neighbour_of_prefix != NULL)
+    {
+        //zlog_debug (" this is  our peer we have sent an update to");
+
+        struct peer_list * my_temp = test_neighbour_of_prefix -> peer_list ;
+        
+        //zlog_debug("********** going to print the peer list ********");
+        while(my_temp != NULL)
+        {
+            
+            //zlog_debug("this is the host of the peer %s", my_temp -> peer -> host);
+
+            bgp_convergence_send (my_temp -> peer,rec_root_cause_event_id, received_prefix);
+            
+            my_temp = my_temp -> next;
+         }
+    }
+    else
+        zlog_debug (" We have not sent prefix %s to any neighbor!!!",received_prefix);
 
 
   return 1;
@@ -1698,7 +1787,6 @@ static int
 bgp_fizzle_receive (struct peer *peer, bgp_size_t size)
 {
 
-  zlog_debug ("0.we have received a fizzle message from %s and we are going to pars it  ", peer->host);
 
 
   int ret, nlri_ret;
@@ -1737,12 +1825,9 @@ bgp_fizzle_receive (struct peer *peer, bgp_size_t size)
   attr.extra = &extra;
 
   s = peer->ibuf;
-
-
-
-      char result7[50]; 
+  char result7[50]; 
    
-    sprintf(result7, "%u", stream_pnt (s)); 
+  sprintf(result7, "%u", stream_pnt (s)); 
 
     //zlog_debug ("%s 1. this is the stream_pnt (s) ", result7);
 
@@ -1851,19 +1936,6 @@ bgp_fizzle_receive (struct peer *peer, bgp_size_t size)
   received_prefix3 = stream_getl (s);
   received_prefix4 = stream_getl (s);
 
-
-
-
-
-
-// if (time_stamp == 111111)
-//     zlog_debug ("this is the timestamp");
-
-// if (root_cause_event_id == 1234567)
-//     zlog_debug ("this is the root_cause_event_id");
-
-
-
   char char_received_root_cause_event_id[50];
   sprintf( char_received_root_cause_event_id, "%u", rec_root_cause_event_id_from_fizzle );
 
@@ -1894,44 +1966,20 @@ bgp_fizzle_receive (struct peer *peer, bgp_size_t size)
   strcat(received_prefix, ".");
   strcat(received_prefix, char_received_prefix4);
 
-  zlog_debug ("%s 4.this is the received_prefix", received_prefix);
+  zlog_debug ("We received a fizzle message from %s for prefix %s , time_stamp %s and E_id %ld ", peer->host,received_prefix,char_receiveded_time_stamp,char_received_root_cause_event_id);
+
+  //zlog_debug ("%s 4.this is the received_prefix", received_prefix);
 
 
-// char split;
-// char word;
-
-// split=strtok(received_prefix,".");
-
-// while(split != NULL)
-// {
-//     word=split;
-//     zlog_debug ("the th one %s",word);
-
-//     split=strtok(NULL,".");
-// }
-
-  zlog_debug ("after splitting");
+  // zlog_debug ("%s 1.this is the char_receiveded_time_stamp", char_receiveded_time_stamp);
+  // zlog_debug ("%s 2.this is the received_root_cause_event_id", char_received_root_cause_event_id);
+  // zlog_debug ("%s 3.this is the received_root_cause_event_owenr", char_owner_id);
+  // zlog_debug ("%s 4.this is the received_prefix", received_prefix);
 
 
-
-
-  // char str3[50];
-  // uint32_t my_num;
-  // my_num = 1234567;
-  // sprintf( str3, "%u",  my_num);
-
-  // zlog_debug ("%s this is the 1234567", str3);
-
-
-  zlog_debug ("%s 1.this is the char_receiveded_time_stamp", char_receiveded_time_stamp);
-  zlog_debug ("%s 2.this is the received_root_cause_event_id", char_received_root_cause_event_id);
-  zlog_debug ("%s 3.this is the received_root_cause_event_owenr", char_owner_id);
-  zlog_debug ("%s 4.this is the received_prefix", received_prefix);
-
-
-  zlog_debug ("**** ... deleting from sent...****...We are going to delete %s for prefix %s from sent data list", char_receiveded_time_stamp,received_prefix);
+  // zlog_debug ("**** ... deleting from sent...****...We are going to delete %s for prefix %s from sent data list", char_receiveded_time_stamp,received_prefix);
   
-  print_sent(&(a_peer_for_maintating_head_of_data_structure -> sent));
+  //print_sent(&(a_peer_for_maintating_head_of_data_structure -> sent));
   
 
     // if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), 8888, received_prefix))
@@ -1954,77 +2002,103 @@ bgp_fizzle_receive (struct peer *peer, bgp_size_t size)
     //   zlog_debug ("sent is not empty after deleting");
 
 
-  delete_from_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),char_receiveded_time_stamp, peer,  rec_root_cause_event_owener_id, received_prefix );
+  delete_from_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),char_receiveded_time_stamp, peer,  rec_root_cause_event_id_from_fizzle, received_prefix );
 
 
-    if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> sent), rec_root_cause_event_owener_id, received_prefix))
-      zlog_debug ("sent is empty after deleting");
-    else
-      zlog_debug ("sent is not empty after deleting");
+    // if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> sent), rec_root_cause_event_owener_id, received_prefix))
+    //   zlog_debug ("sent is empty after deleting");
+    // else
+    //   zlog_debug ("sent is not empty after deleting");
 
-
-
-// add_to_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),"123", peer, 8888, received_prefix);
-
-
-//     if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), 8888, received_prefix))
-//       zlog_debug ("sent is not empty after adding ");
-//     else
-//       zlog_debug ("sent is empty after adding ");
-//     delete_from_sent(&(a_peer_for_maintating_head_of_data_structure -> sent),"123", peer, 8888, received_prefix);
-
-//     if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> received_prefix), 8888, received_prefix))
-//       zlog_debug ("sent is empty after deleting");
-//     else
-//       zlog_debug ("sent is not empty after deleting");
-
-
-
-
-
-
-  //print_sent(&(a_peer_for_maintating_head_of_data_structure -> received_prefix));
-  //delete_from_sent(&(a_peer_for_maintating_head_of_data_structure -> received_prefix),char_receiveded_time_stamp, peer,  rec_root_cause_event_owener_id, received_prefix );
-
-  if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> sent), rec_root_cause_event_owener_id, received_prefix))
+  if (check_if_sent_is_empty(&(a_peer_for_maintating_head_of_data_structure -> sent),rec_root_cause_event_id_from_fizzle , received_prefix))
     {
       if (rec_root_cause_event_owener_id ==  peer->local_as)
-
-            zlog_debug ("**************************** it seems my sent is empty and I am the owner of event it, the owner_id is %s and my id is %ld    ***************",char_owner_id,peer->as);
-            zlog_debug ("**************************** sending global convergence message for    %  ***************",char_received_root_cause_event_id);
+      {
+            zlog_debug ("................................********  STABLE STATE DETECTION of %s ********............................",char_received_root_cause_event_id);
+            //zlog_debug ("**************************** it seems my sent is empty and I am the owner of event it, the owner_id is %s and my id is %ld    ***************",char_owner_id,peer->as);
+            //zlog_debug ("**************************** sending global convergence message for    %  ***************",char_received_root_cause_event_id);
             // for all prefix_neighbors:
             //   send_convergence_message()
+      struct neighbours_of_a_prefix * test_neighbour_of_prefix = (struct neighbours_of_a_prefix *) malloc (sizeof(struct neighbours_of_a_prefix));
+
+      test_neighbour_of_prefix = get_from_neighbours_of_a_prefix(&(a_peer_for_maintating_head_of_data_structure -> neighbours_of_prefix),received_prefix);
+        
+        if (test_neighbour_of_prefix != NULL)
+        {
+            //zlog_debug (" this is  our peer we have sent an update to");
+
+            struct peer_list * my_temp = test_neighbour_of_prefix -> peer_list ;
+            
+            //zlog_debug("********** going to print the peer list ********");
+            while(my_temp != NULL)
+            {
+                
+               // zlog_debug("this is the host of the peer %s", my_temp -> peer -> host);
+
+                bgp_convergence_send (my_temp -> peer,rec_root_cause_event_id_from_fizzle, received_prefix);
+                
+                my_temp = my_temp -> next;
+             }
+        }
+        else
+            zlog_debug (" We have not sent prefix %s to any neighbor!!!",received_prefix);
+      }
+      else
+      {
+        //zlog_debug ("**************************** it seems my sent is empty BUT I am not the owner of event it, the owner_id is %s and my id is %ld    ***************",char_owner_id,peer->as);
+
+        struct cause* cause_of_fizzle = (struct cause*) malloc(sizeof(struct cause));
+      
+        cause_of_fizzle = getcause(&(a_peer_for_maintating_head_of_data_structure -> cause), char_receiveded_time_stamp);
+
+    if (cause_of_fizzle != NULL)
+      {
+        //zlog_debug ("********** We are going to send back a fizzle to the cause of %s which is %s**********",char_receiveded_time_stamp,cause_of_fizzle->received_timestamp);
+    
+          //zlog_debug("We are going to send a FIZZLE message to %s for prefix %s with time stamp %s and event id %d and E owner is %ld ",cause_of_fizzle->neighbour->host,cause_of_fizzle -> prefix_str,cause_of_fizzle->received_timestamp,char_received_root_cause_event_id),rec_root_cause_event_owener_id;
+          int my_converted_root_cause_id_second = (int)strtol(char_received_root_cause_event_id, (char **)NULL, 10); // strtol = STRing TO Long
+
+          bgp_fizzle_send(cause_of_fizzle->neighbour,my_converted_root_cause_id_second,cause_of_fizzle->received_timestamp,cause_of_fizzle->router_id,cause_of_fizzle -> prefix_str,rec_root_cause_event_owener_id);
+      }
+      else
+      {
+        zlog_debug("Big Error!!!!! We did not get anything for received time stamp %s in case sent is empty after removing",char_receiveded_time_stamp);
+
+      }
+
+
+      }
     }
   else
     {
-      zlog_debug ("*************sent is not empty *************");
+      //zlog_debug ("*************sent is not empty *************");
 
-      //print_sent(&(a_peer_for_maintating_head_of_data_structure -> received_prefix));
+      print_sent(&(a_peer_for_maintating_head_of_data_structure -> sent));
 
       struct cause* temp_cause = (struct cause*) malloc(sizeof(struct cause));
       
       temp_cause = getcause(&(a_peer_for_maintating_head_of_data_structure -> cause), char_receiveded_time_stamp);
-      zlog_debug ("*************We got the cause of %s  *************",char_receiveded_time_stamp);
+      //zlog_debug ("*************We got the cause of %s  *************",char_receiveded_time_stamp);
 
       if (temp_cause != NULL)
       {
 
-        zlog_debug("We are going to send a FIZZLE message to %s ",temp_cause->neighbour->host);
+        //zlog_debug("We are going to send a FIZZLE message to %s ",temp_cause->neighbour->host);
 
-        zlog_debug("We are going to send a FIZZLE message to %s for prefix %s ",temp_cause->neighbour->host,temp_cause -> prefix_str);
-
-
-        zlog_debug("We are going to send a FIZZLE message to %s for prefix %s with time stamp %s ",temp_cause->neighbour->host,temp_cause -> prefix_str,temp_cause->received_timestamp);
+        //zlog_debug("We are going to send a FIZZLE message to %s for prefix %s ",temp_cause->neighbour->host,temp_cause -> prefix_str);
 
 
-          zlog_debug("We are going to send a FIZZLE message to %s for prefix %s with time stamp %s and event id %ld",temp_cause->neighbour->host,temp_cause -> prefix_str,temp_cause->received_timestamp,char_received_root_cause_event_id);
+        //zlog_debug("We are going to send a FIZZLE message to %s for prefix %s with time stamp %s ",temp_cause->neighbour->host,temp_cause -> prefix_str,temp_cause->received_timestamp);
+
+
+          zlog_debug("We are going to send a FIZZLE message to %s for prefix %s with time stamp %s and event id %d and E owner is %ld ",temp_cause->neighbour->host,temp_cause -> prefix_str,temp_cause->received_timestamp,char_received_root_cause_event_id),rec_root_cause_event_owener_id;
           int my_converted_root_cause_id = (int)strtol(char_received_root_cause_event_id, (char **)NULL, 10); // strtol = STRing TO Long
 
-          bgp_fizzle_send(temp_cause->neighbour,my_converted_root_cause_id,temp_cause->received_timestamp,temp_cause->router_id,temp_cause -> prefix_str);
+          bgp_fizzle_send(temp_cause->neighbour,my_converted_root_cause_id,temp_cause->received_timestamp,temp_cause->router_id,temp_cause -> prefix_str,rec_root_cause_event_owener_id);
       }
       else
       {
-        zlog_debug("Error!!!!! We did not get anything for received time stamp %s",char_receiveded_time_stamp);
+        zlog_debug("Error!!!!! We did not get anything for received time stamp %s in case sent is not empty",char_receiveded_time_stamp);
 
       }
 
@@ -2260,7 +2334,7 @@ bgp_route_refresh_send (struct peer *peer, afi_t afi, safi_t safi,
 
 
 
-    zlog_debug (" We are in bgp_route_refresh_send");
+   // zlog_debug (" We are in bgp_route_refresh_send");
 
 
 
@@ -2929,7 +3003,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
 
 /* Frontend for NLRI parsing, to fan-out to AFI/SAFI specific parsers */
 int
-bgp_nlri_parse (struct peer *peer, struct attr *attr, struct bgp_nlri *packet,uint32_t *passed_root_cause_event_id,char *passed_time_stamp)
+bgp_nlri_parse (struct peer *peer, struct attr *attr, struct bgp_nlri *packet,uint32_t *passed_root_cause_event_id,char *passed_time_stamp,uint32_t *passed_owner_id)
 {
 
 
@@ -2940,13 +3014,13 @@ bgp_nlri_parse (struct peer *peer, struct attr *attr, struct bgp_nlri *packet,ui
 
 
 
-    zlog_debug ("we are going to call bgp_nlri_parse_ip for timestamp %s ",passed_time_stamp);
+   // zlog_debug ("we are going to call bgp_nlri_parse_ip for timestamp %s ",passed_time_stamp);
 
   switch (packet->safi)
     {
       case SAFI_UNICAST:
       case SAFI_MULTICAST:
-        return bgp_nlri_parse_ip (peer, attr, packet,passed_root_cause_event_id,passed_time_stamp);
+        return bgp_nlri_parse_ip (peer, attr, packet,passed_root_cause_event_id,passed_time_stamp,passed_owner_id);
       case SAFI_MPLS_VPN:
       case SAFI_MPLS_LABELED_VPN:
         return bgp_nlri_parse_vpn (peer, attr, packet);
@@ -3137,11 +3211,11 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
   // zlog_debug ("%s this is the 1234567", str3);
 
 
-  zlog_debug ("%s 3.this is received time_stamp", char_rec_time_stamp);
+  // zlog_debug ("%s 3.this is received time_stamp", char_rec_time_stamp);
 
-  zlog_debug ("%s 4.this is the received_root_cause_event_id", char_rec_root_cause_event_id);
+  // zlog_debug ("%s 4.this is the received_root_cause_event_id", char_rec_root_cause_event_id);
 
-  zlog_debug ("%s 4.this is the received_root_cause_event_owner", char_rec_root_cause_event_owner_router_id);
+  // zlog_debug ("%s 4.this is the received_root_cause_event_owner", char_rec_root_cause_event_owner_router_id);
 
   /* Unfeasible Route Length. */
   withdraw_len = stream_getw (s);
@@ -3391,13 +3465,13 @@ bgp_update_receive (struct peer *peer, bgp_size_t size)
            // zlog_debug ("Lets pars all received prefixes in this update messages from %s ",peer->host);
            // zlog_debug ("Lets pars all received prefixes in this update messages for time stamp %s ",char_rec_time_stamp);
 
-            nlri_ret = bgp_nlri_parse (peer, NLRI_ATTR_ARG, &nlris[i],rec_root_cause_event_id,char_rec_time_stamp);
+            nlri_ret = bgp_nlri_parse (peer, NLRI_ATTR_ARG, &nlris[i],rec_root_cause_event_id,char_rec_time_stamp,rec_root_cause_event_owner_router_id);
            // zlog_debug ("we parsed all received prefixes in this update messages from %s ",peer->host);
 
             break;
           case NLRI_WITHDRAW:
           case NLRI_MP_WITHDRAW:
-            nlri_ret = bgp_nlri_parse (peer, NULL, &nlris[i],rec_root_cause_event_id,char_rec_time_stamp);
+            nlri_ret = bgp_nlri_parse (peer, NULL, &nlris[i],rec_root_cause_event_id,char_rec_time_stamp,rec_root_cause_event_owner_router_id);
         }
       
       if (nlri_ret < 0)
@@ -4106,27 +4180,27 @@ bgp_read (struct thread *thread)
 
   if (stream_get_endp (peer->ibuf) < BGP_HEADER_SIZE)
     {
-     //zlog_debug (" I am in the line which stream_get_endp (peer->ibuf) < BGP_HEADER_SIZE");
+    // zlog_debug (" I am in the line which stream_get_endp (peer->ibuf) < BGP_HEADER_SIZE");
 
       ret = bgp_read_packet (peer);
 
       /* Header read error or partial read packet. */
       if (ret < 0) 
-      {      //zlog_debug (" Header read error or partial read packet and finished!!");
+      {     // zlog_debug (" Header read error or partial read packet and finished!!");
 
 
 	goto done;
 }
 
-    //zlog_debug (" lets check the message type and size %s", peer->host);
+   // zlog_debug (" lets check the message type and size %s", peer->host);
 
       /* Get size and type. */
       stream_forward_getp (peer->ibuf, BGP_MARKER_SIZE);
-      //zlog_debug (" lets check the message type and size after stream_forward_getp %s", peer->host);
+     // zlog_debug (" lets check the message type and size after stream_forward_getp %s", peer->host);
 
       memcpy (notify_data_length, stream_pnt (peer->ibuf), 2);
 
-      //zlog_debug (" lets check the message type and size after memcpy %s", peer->host);
+     // zlog_debug (" lets check the message type and size after memcpy %s", peer->host);
 
       size = stream_getw (peer->ibuf);
       type = stream_getc (peer->ibuf);
@@ -4149,10 +4223,12 @@ bgp_read (struct thread *thread)
   //zlog_debug ("%s the first size is ", result32 );
 
 
-      if (type == BGP_MSG_FIZZLE)
-        zlog_debug (" ...........=====this is a FIZZLE message from....======  %s", peer->host);
+      // if (type == BGP_MSG_FIZZLE)
+      //   zlog_debug (" ...........=====this is a FIZZLE message from....======  %s", peer->host);
       
-
+      // if (type == BGP_MSG_CONVERGENCE)
+      //   zlog_debug (" ...........=====this is a CONVERGENCE message from....======  %s", peer->host);
+      
 
 
 
@@ -4175,7 +4251,10 @@ bgp_read (struct thread *thread)
 
 
       if (BGP_DEBUG (normal, NORMAL) && type != 2 && type != 0)
-      {      //zlog_debug ("We got error due to type != 2 && type != 0 " );
+      {      
+
+
+       // zlog_debug ("We got error due to type != 2 && type != 0 " );
 
 
 	zlog_debug ("%s rcv message type %d, length (excl. header) %d",
@@ -4187,7 +4266,7 @@ bgp_read (struct thread *thread)
 	  && ! bgp_marker_all_one (peer->ibuf, BGP_MARKER_SIZE))
 	{
 
-     // zlog_debug ("We got error here " );
+   // zlog_debug ("We got error here " );
 
 
 
@@ -4218,7 +4297,7 @@ bgp_read (struct thread *thread)
 	  goto done;
 	}
 
-    //zlog_debug (" lets check the Mimimum packet length  %s", peer->host);
+   //zlog_debug (" lets check the Mimimum packet length  %s", peer->host);
 
 
 
@@ -4231,7 +4310,8 @@ bgp_read (struct thread *thread)
 	  || (type == BGP_MSG_KEEPALIVE && size != BGP_MSG_KEEPALIVE_MIN_SIZE)
 	  || (type == BGP_MSG_ROUTE_REFRESH_NEW && size < BGP_MSG_ROUTE_REFRESH_MIN_SIZE)
 	  || (type == BGP_MSG_ROUTE_REFRESH_OLD && size < BGP_MSG_ROUTE_REFRESH_MIN_SIZE)
-	  || (type == BGP_MSG_CAPABILITY && size < BGP_MSG_CAPABILITY_MIN_SIZE))
+	  || (type == BGP_MSG_CAPABILITY && size < BGP_MSG_CAPABILITY_MIN_SIZE)
+    )
 	{
 	  if (BGP_DEBUG (normal, NORMAL))
 	    plog_debug (peer->log,
@@ -4239,7 +4319,7 @@ bgp_read (struct thread *thread)
 		      peer->host, size, 
 		      type == 128 ? "ROUTE-REFRESH" :
 		      bgp_type_str[(int) type]);
-    //zlog_debug (" we are going to call bgp_notify_send_with_data");
+   // zlog_debug (" we are going to call bgp_notify_send_with_data");
 	  bgp_notify_send_with_data (peer,
 				     BGP_NOTIFY_HEADER_ERR,
 			  	     BGP_NOTIFY_HEADER_BAD_MESLEN,
@@ -4266,7 +4346,7 @@ bgp_read (struct thread *thread)
   char result2[50]; 
   sprintf(result2, "%u", type);
 
-  //zlog_debug ("%s this is the type of the  received packet", result2);
+ // zlog_debug ("%s this is the type of the  received packet", result2);
 
 
 
@@ -4298,7 +4378,7 @@ bgp_read (struct thread *thread)
 
     case BGP_MSG_CONVERGENCE:
       //zlog_debug ("%s The type of received packet is BGP_MSG_CONVERGENCE, let's pars it", "horraaaaaaa........");
-      bgp_convergene_receive (peer, size);
+      bgp_convergence_receive (peer, size);
       break;
     case BGP_MSG_UPDATE:
       //zlog_debug ("%s we received an new update packet ", "!!!!!!!!!!!!!!!!!!!!" );
@@ -4307,7 +4387,7 @@ bgp_read (struct thread *thread)
       bgp_update_receive (peer, size);
       break;
     case BGP_MSG_FIZZLE:
-      zlog_debug ("%s The type of received packet is FIZZLE, let's pars it", "horraaaaaaa........");
+      //zlog_debug ("%s The type of received packet is FIZZLE, let's pars it", "horraaaaaaa........");
       bgp_fizzle_receive (peer, size);
       break;
     case BGP_MSG_NOTIFY:

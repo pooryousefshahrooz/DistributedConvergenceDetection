@@ -702,7 +702,7 @@ bgp_zebra_announce (struct prefix *p, struct bgp_info *info, struct bgp *bgp, sa
 {
 
 
-  zlog_debug ("we are in bgp_zebra_announce");
+  //zlog_debug ("we are in bgp_zebra_announce");
 
 
 

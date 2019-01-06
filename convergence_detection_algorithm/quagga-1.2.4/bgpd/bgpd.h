@@ -400,13 +400,13 @@ extern void print_cause(struct cause** head_ref);
 struct sent{
     char *timestamp[100];
     struct peer* neighbour;
-    uint32_t router_id;
+    uint32_t E_id;
     char * prefix[100];
     struct sent * next;
 };
-extern void add_to_sent(struct sent** head_ref, char * in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix);
-extern void delete_from_sent(struct sent** head_ref,char * in_time_stamp, struct peer* in_neighbour, uint32_t in_router_id, char * in_prefix );
-extern bool check_if_sent_is_empty(struct sent** head_ref,uint32_t in_router_id, char * in_prefix );
+extern void add_to_sent(struct sent** head_ref, char * in_time_stamp, struct peer* in_neighbour, uint32_t  in_E_id, char * in_prefix);
+extern void delete_from_sent(struct sent** head_ref,char * in_time_stamp, struct peer* in_neighbour, uint32_t  in_E_id, char * in_prefix );
+extern bool check_if_sent_is_empty(struct sent** head_ref,uint32_t  in_E_id, char * in_prefix );
 extern void print_sent(struct sent ** head_ref);
 
 
@@ -453,12 +453,13 @@ struct received_prefix{
     char * time_stamp;
     struct peer* peer_received_from;
     u_int32_t event_id;
+    u_int32_t received_E_owner_id;
     struct received_prefix * next;
 };
 
 
 //only these two functions are needed for this data structure
-extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, char * in_time_stamp, struct peer* in_peer, u_int32_t in_event_id );
+extern void add_to_received_prefix(struct received_prefix** head_ref,char* in_prefix, char * in_time_stamp, struct peer* in_peer, u_int32_t in_event_id, u_int32_t E_owner_id);
 extern struct received_prefix * get_from_received_prefix(struct received_prefix** head_ref, char * in_prefix, struct peer* in_peer);
 extern void print_received_prefix(struct received_prefix ** head_ref);
 struct peer_list{
